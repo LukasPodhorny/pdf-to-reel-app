@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'constants.dart';
+import 'screens/video_generator_screen.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'PDF to Reel',
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color.fromRGBO(30, 30, 30, 1),
+        useMaterial3: true,
+      ),
+      home: const VideoGeneratorScreen(),
     );
   }
 }
