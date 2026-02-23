@@ -59,7 +59,6 @@ class TopBar extends StatelessWidget {
                         height: double.infinity,
                         decoration: BoxDecoration(
                           color: AppColors.element,
-                          // 👇 MATCHED TO OUTER RADIUS (24) 👇
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: Colors.white.withOpacity(0.12),

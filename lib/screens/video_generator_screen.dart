@@ -31,7 +31,7 @@ class _VideoGeneratorScreenState extends State<VideoGeneratorScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       // Prevents resizing the background when keyboard opens
-      resizeToAvoidBottomInset: false, 
+      resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -51,15 +51,12 @@ class _VideoGeneratorScreenState extends State<VideoGeneratorScreen> {
                   value: _reelCount,
                   onChanged: (val) => setState(() => _reelCount = val),
                 ),
-                Expanded(
-                  child: VideoCarousel(controller: _pageController),
-                ),
+                Expanded(child: VideoCarousel(controller: _pageController)),
                 const SizedBox(height: 160),
               ],
             ),
           ),
 
-          // --- Floating Input Layer (Dynamic) ---
           Positioned(
             left: 0,
             right: 0,
