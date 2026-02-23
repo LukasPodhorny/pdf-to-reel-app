@@ -22,10 +22,9 @@ class VideoCarousel extends StatelessWidget {
             }
             return Center(
               child: SizedBox(
-                // 👇 DECREASED HEIGHT & WIDTH HERE 👇
                 height: Curves.easeOut.transform(value) * 500, // Was 500
                 width: 300, // Was 350
-                // 👆 ---------------------------- 👆
+
                 child: child,
               ),
             );
