@@ -26,7 +26,6 @@ class BottomInputArea extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 👇 1. UPDATED WRAPPER: Fixed Button + Scrolling List 👇
           Container(
             height: 110,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -60,7 +59,6 @@ class BottomInputArea extends ConsumerWidget {
             ),
           ),
 
-          // 👆 -------------------------------------------------- 👆
           const SizedBox(height: 16),
           Row(
             children: [
@@ -139,9 +137,7 @@ class BottomInputArea extends ConsumerWidget {
       child: Container(
         width: 60,
         height: 60,
-        margin: const EdgeInsets.only(
-          right: 16,
-        ), // Keeps space between button and scrolling list
+        margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: AppColors.surface3,
           shape: BoxShape.circle,

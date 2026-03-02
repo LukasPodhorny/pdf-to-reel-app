@@ -10,7 +10,6 @@ class CustomSlider extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(reelCountProvider);
     return Padding(
-      // Changed horizontal padding from 24 -> 16 to match ProfileSelector margin
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Row(
         children: [
@@ -21,9 +20,7 @@ class CustomSlider extends ConsumerWidget {
                 inactiveTrackColor: const Color(0xFF3A3A3C),
                 thumbColor: Colors.white,
 
-                // 1. THICKNESS & SHAPE
-                trackHeight: 9, // Thick track
-                // 2. REMOVE DOTS
+                trackHeight: 9,
                 trackShape: const UniformTrackShape(),
 
                 tickMarkShape: SliderTickMarkShape.noTickMark,
@@ -72,7 +69,7 @@ class UniformTrackShape extends RoundedRectSliderTrackShape {
     Offset? secondaryOffset,
     bool isDiscrete = false,
     bool isEnabled = false,
-    double additionalActiveTrackHeight = 4, // The sneaky default!
+    double additionalActiveTrackHeight = 4,
   }) {
     super.paint(
       context,
@@ -85,7 +82,6 @@ class UniformTrackShape extends RoundedRectSliderTrackShape {
       secondaryOffset: secondaryOffset,
       isDiscrete: isDiscrete,
       isEnabled: isEnabled,
-      // Force the extra height to 0 to make both sides identical
       additionalActiveTrackHeight: 0.0,
     );
   }
