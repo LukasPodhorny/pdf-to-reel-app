@@ -11,17 +11,13 @@ class ProfileSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndices = ref.watch(selectedProfileIndicesProvider);
     return Container(
-      // 1. INCREASED HEIGHT: Was 85, now 110 to fit larger avatars
       height: 90,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF212121), // The dark grey background container
+        color: const Color(0xFF212121),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF2E2E2E), // Correct hex color syntax
-          width: 1.5,
-        ),
+        border: Border.all(color: const Color(0xFF2E2E2E), width: 1.5),
       ),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -31,7 +27,6 @@ class ProfileSelector extends ConsumerWidget {
         itemBuilder: (context, index) {
           final isSelected = selectedIndices.contains(index);
 
-          // 2. INTERACTION: Wrap in GestureDetector to make it clickable
           return GestureDetector(
             onTap: () {
               final current = ref.read(selectedProfileIndicesProvider);
