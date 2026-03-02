@@ -41,31 +41,24 @@ class ProfileSelector extends ConsumerWidget {
               }
             },
             child: Container(
-              // 3. INCREASED AVATAR SIZE: Was 50, now 80
               width: 80,
               height: 80,
-              padding: const EdgeInsets.all(
-                3,
-              ), // Slightly thicker gap for larger size
+              padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: isSelected
-                    ? Border.all(
-                        color: Colors.white,
-                        width: 3.0,
-                      ) // Thicker border
+                    ? Border.all(color: Colors.white, width: 3.0)
                     : null,
               ),
               child: Container(
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey, // Fallback color
+                  color: Colors.grey,
                 ),
-                clipBehavior: Clip.antiAlias, // Cuts the image into a circle
+                clipBehavior: Clip.antiAlias,
                 child: SafeNetworkImage(
                   'https://upload.wikimedia.org/wikipedia/commons/0/06/Elon_Musk%2C_2018_%28cropped%29.jpg',
-                  fit: BoxFit
-                      .cover, // Forces image to fill the circle without distorting
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
