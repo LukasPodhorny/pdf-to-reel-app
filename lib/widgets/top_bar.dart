@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants.dart';
+import '../ui_providers.dart';
 
-class TopBar extends StatelessWidget {
-  final bool isGenerateMode;
-  final ValueChanged<bool> onToggle;
-
-  const TopBar({
-    super.key,
-    required this.isGenerateMode,
-    required this.onToggle,
-  });
+class TopBar extends ConsumerWidget {
+  const TopBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isGenerateMode = ref.watch(isGenerateModeProvider);
+    final diamondCount = ref.watch(diamondCountProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: SizedBox(
@@ -25,7 +23,7 @@ class TopBar extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: const BoxDecoration(
-                color: Color(0xFFD6D6D6),
+                color: AppColors.surface1,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.person, color: Colors.white, size: 26),
@@ -37,12 +35,9 @@ class TopBar extends StatelessWidget {
               width: 220,
               // 👇 PADDING REMOVED HERE 👇
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.surface1,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.08),
-                  width: 1,
-                ),
+                border: Border.all(color: AppColors.surface2, width: 1.5),
               ),
               child: Stack(
                 children: [
@@ -58,11 +53,12 @@ class TopBar extends StatelessWidget {
                       child: Container(
                         height: double.infinity,
                         decoration: BoxDecoration(
-                          color: AppColors.element,
+                          color: AppColors.surface2,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.12),
-                            width: 1.0,
+                            color: AppColors.surface3,
+                            width: 1.5,
+                            strokeAlign: BorderSide.strokeAlignOutside,
                           ),
                         ),
                       ),
@@ -72,8 +68,22 @@ class TopBar extends StatelessWidget {
                   // 2. FOREGROUND TEXT OPTIONS
                   Row(
                     children: [
-                      Expanded(child: _buildToggleOption("generate", true)),
-                      Expanded(child: _buildToggleOption("videos", false)),
+                      Expanded(
+                        child: _buildToggleOption(
+                          "generate",
+                          true,
+                          isGenerateMode,
+                          ref,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildToggleOption(
+                          "videos",
+                          false,
+                          isGenerateMode,
+                          ref,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -83,9 +93,9 @@ class TopBar extends StatelessWidget {
             // Right: Diamond Count
             Row(
               children: [
-                const Text(
-                  "100",
-                  style: TextStyle(
+                Text(
+                  "$diamondCount",
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -112,10 +122,16 @@ class TopBar extends StatelessWidget {
     );
   }
 
-  Widget _buildToggleOption(String text, bool isForGenerate) {
-    bool isActive = isGenerateMode == isForGenerate;
+  Widget _buildToggleOption(
+    String text,
+    bool isForGenerate,
+    bool currentMode,
+    WidgetRef ref,
+  ) {
+    bool isActive = currentMode == isForGenerate;
     return GestureDetector(
-      onTap: () => onToggle(isForGenerate),
+      onTap: () =>
+          ref.read(isGenerateModeProvider.notifier).state = isForGenerate,
       behavior: HitTestBehavior.opaque,
       child: Container(
         alignment: Alignment.center,

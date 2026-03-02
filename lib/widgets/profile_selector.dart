@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants.dart';
+import '../ui_providers.dart';
 import '../safe_network_image.dart';
 
-class ProfileSelector extends StatefulWidget {
+class ProfileSelector extends ConsumerWidget {
   const ProfileSelector({super.key});
 
   @override
-  State<ProfileSelector> createState() => _ProfileSelectorState();
-}
-
-class _ProfileSelectorState extends State<ProfileSelector> {
-  // Track the active selection here
-  int _selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedIndices = ref.watch(selectedProfileIndicesProvider);
     return Container(
       // 1. INCREASED HEIGHT: Was 85, now 110 to fit larger avatars
       height: 90,
@@ -25,7 +20,7 @@ class _ProfileSelectorState extends State<ProfileSelector> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: const Color(0xFF2E2E2E), // Correct hex color syntax
-          width: 1.0,
+          width: 1.5,
         ),
       ),
       child: ListView.separated(
@@ -34,14 +29,21 @@ class _ProfileSelectorState extends State<ProfileSelector> {
         itemCount: 6,
         separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final isSelected = _selectedIndex == index;
+          final isSelected = selectedIndices.contains(index);
 
           // 2. INTERACTION: Wrap in GestureDetector to make it clickable
           return GestureDetector(
             onTap: () {
-              setState(() {
-                _selectedIndex = index;
-              });
+              final current = ref.read(selectedProfileIndicesProvider);
+              if (current.contains(index)) {
+                ref.read(selectedProfileIndicesProvider.notifier).state = {
+                  ...current,
+                }..remove(index);
+              } else {
+                ref.read(selectedProfileIndicesProvider.notifier).state = {
+                  ...current,
+                }..add(index);
+              }
             },
             child: Container(
               // 3. INCREASED AVATAR SIZE: Was 50, now 80

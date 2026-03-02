@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants.dart';
 import '../../widgets/top_bar.dart';
 import '../../widgets/profile_selector.dart';
@@ -6,16 +7,15 @@ import '../../widgets/custom_slider.dart';
 import '../../widgets/video_carousel.dart';
 import '../../widgets/bottom_input_area.dart';
 
-class VideoGeneratorScreen extends StatefulWidget {
+class VideoGeneratorScreen extends ConsumerStatefulWidget {
   const VideoGeneratorScreen({super.key});
 
   @override
-  State<VideoGeneratorScreen> createState() => _VideoGeneratorScreenState();
+  ConsumerState<VideoGeneratorScreen> createState() =>
+      _VideoGeneratorScreenState();
 }
 
-class _VideoGeneratorScreenState extends State<VideoGeneratorScreen> {
-  bool _isGenerateMode = true;
-  double _reelCount = 4;
+class _VideoGeneratorScreenState extends ConsumerState<VideoGeneratorScreen> {
   final PageController _pageController = PageController(viewportFraction: 0.75);
 
   @override
@@ -41,16 +41,10 @@ class _VideoGeneratorScreenState extends State<VideoGeneratorScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 10),
-                TopBar(
-                  isGenerateMode: _isGenerateMode,
-                  onToggle: (val) => setState(() => _isGenerateMode = val),
-                ),
+                const TopBar(),
                 const SizedBox(height: 20),
                 const ProfileSelector(),
-                CustomSlider(
-                  value: _reelCount,
-                  onChanged: (val) => setState(() => _reelCount = val),
-                ),
+                const CustomSlider(),
                 Expanded(child: VideoCarousel(controller: _pageController)),
                 const SizedBox(height: 160),
               ],

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants.dart';
+import '../ui_providers.dart';
 
-class CustomSlider extends StatelessWidget {
-  final double value;
-  final ValueChanged<double> onChanged;
-
-  const CustomSlider({super.key, required this.value, required this.onChanged});
+class CustomSlider extends ConsumerWidget {
+  const CustomSlider({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final value = ref.watch(reelCountProvider);
     return Padding(
       // Changed horizontal padding from 24 -> 16 to match ProfileSelector margin
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -36,7 +36,9 @@ class CustomSlider extends StatelessWidget {
                 min: 1,
                 max: 10,
                 divisions: 9, // Snapping enabled, but dots hidden via Theme
-                onChanged: onChanged,
+                onChanged: (val) {
+                  ref.read(reelCountProvider.notifier).state = val;
+                },
               ),
             ),
           ),
