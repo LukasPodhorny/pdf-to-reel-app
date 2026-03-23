@@ -10,11 +10,14 @@ dependencies:
   flutter:
     sdk: flutter
   # State management
-  flutter_riverpod: ^2.5.1 
+  flutter_riverpod: ^2.5.1
   # Navigace a utility
-  go_router: ^13.2.0
-  dio: ^5.4.1 # Pro HTTP požadavky
-  intl: ^0.19.0 # Pro formátování dat a jazyky
+  flutter_svg: ^2.2.3
+  video_player: ^2.8.6
+  shimmer: ^3.0.0
+  carousel_slider: ^5.1.2
+
+
 
 dev_dependencies:
   flutter_test:
@@ -26,3 +29,5 @@ flutter:
   # If you add assets later, they go here under this single flutter: key
   # assets:
   #   - assets/images/
+  assets:
+      - assets/icons/

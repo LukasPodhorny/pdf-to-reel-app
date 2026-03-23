@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pdftoreel/widgets/image_loading_shimmer.dart';
 
+/// A wrapper around [Image.network] that provides a loading shimmer and error fallback.
+/// TODO(Backend): Consider replacing `Image.network` with `CachedNetworkImage`
+/// (from the `cached_network_image` package) once connected to the backend for better performance.
 class SafeNetworkImage extends StatelessWidget {
   final String url;
   final BoxFit? fit;
@@ -20,15 +24,7 @@ class SafeNetworkImage extends StatelessWidget {
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
-        return Container(
-          color: Colors.grey[900],
-          child: const Center(
-            child: SizedBox(
-              width: 20, height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.grey),
-            ),
-          ),
-        );
+        return const ImageLoadingShimmer();
       },
     );
   }

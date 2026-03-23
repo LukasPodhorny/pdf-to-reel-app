@@ -3,13 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants.dart';
 import '../ui_providers.dart';
 import '../safe_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class BottomInputArea extends ConsumerWidget {
+class BottomInputArea extends ConsumerStatefulWidget {
   const BottomInputArea({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BottomInputArea> createState() => _BottomInputAreaState();
+}
+
+class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final diamondCount = ref.watch(diamondCountProvider);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
@@ -27,85 +42,161 @@ class BottomInputArea extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: 110,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            height: 88,
+            // 1. THE PARENT PAD FIX: Kept left at 16 for the button, but changed right to 0!
+            // This allows the list to stretch fully to the right edge for the fade.
+            padding: const EdgeInsets.only(
+              left: 18,
+              right: 1,
+              top: 8,
+              bottom: 4,
+            ),
             decoration: BoxDecoration(
               color: AppColors.surface2,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.surface4, width: 1.5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.surface2, width: 1.0),
             ),
+
+            // 2. THE CURVE FIX: Forces the fading list to obey the 20px rounded corners on the right side
+            clipBehavior: Clip.antiAlias,
+
             child: Row(
               children: [
-                // Fixed upload button on the left
                 _buildUploadButton(),
 
-                // Expanded lets the ListView take up the remaining space
                 Expanded(
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    // Removes the default padding so it sits flush next to the button
-                    padding: EdgeInsets.zero,
-                    children: [
-                      _buildFilePreview("pdf"),
-                      _buildFilePreview("pptx"),
-                      _buildFilePreview("doc"),
-                      _buildFilePreview("pdf"),
-                      // Add a little extra blank space at the end of the scroll
-                      const SizedBox(width: 4),
-                    ],
+                  child: RawScrollbar(
+                    controller: _scrollController,
+                    thumbColor: AppColors.surface4,
+                    radius: const Radius.circular(8),
+                    thickness: 3,
+
+                    // 3. THE SCROLLBAR FIX: Added 16px left/right so the thumb doesn't draw over the fade zones
+                    padding: const EdgeInsets.only(
+                      bottom: 2,
+                      left: 16,
+                      right: 16,
+                    ),
+                    thumbVisibility: true,
+
+                    // 4. THE SHADER MASK: Applies the exact same edge fade as your avatar selector
+                    child: ShaderMask(
+                      shaderCallback: (Rect rect) {
+                        return const LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black,
+                            Colors.black,
+                            Colors.transparent,
+                          ],
+                          stops: [
+                            0.0,
+                            0.08,
+                            0.92,
+                            1.0,
+                          ], // Tuned to perfectly cover the 16px padding
+                        ).createShader(rect);
+                      },
+                      blendMode: BlendMode.dstIn,
+
+                      child: ListView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+
+                        // 5. THE BOUNCE FIX: Kills the hard Android edge-glow line
+                        physics: const ClampingScrollPhysics(),
+
+                        // 6. THE LIST PAD FIX: The 16px spacing was moved here!
+                        // The files will sit 16px away from the button and the right edge,
+                        // but glide smoothly into that space and fade out when scrolled.
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 0,
+                          bottom: 8,
+                        ),
+
+                        children: [
+                          _buildFilePreview("pdf"),
+                          _buildFilePreview("pptx"),
+                          _buildFilePreview("doc"),
+                          _buildFilePreview("pdf"),
+                          _buildFilePreview("pdf"),
+                          _buildFilePreview("pdf"),
+                          const SizedBox(width: 4),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
                 child: TextField(
-                  style: const TextStyle(color: Colors.white),
+                  minLines: 1,
+                  maxLines: 3,
+                  onTapOutside: (PointerDownEvent event) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    height: 1.2,
+                  ),
                   decoration: InputDecoration(
+                    isDense: true,
                     hintText: "Input prompt...",
-                    hintStyle: const TextStyle(color: Colors.grey),
+                    hintStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      height: 1.2,
+                    ),
                     filled: true,
                     fillColor: AppColors.surface2,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 15,
                       vertical: 14,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(25),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.12),
-                        width: 1.5,
+                        color: AppColors.surface2,
+                        width: 1.0,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(25),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.12),
+                        color: AppColors.surface2,
                         width: 1.0,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(25),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.4),
-                        width: 1.5,
+                        color: AppColors.surface2,
+                        width: 1.0,
                       ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
+
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.neonGreen,
-                  foregroundColor: Colors.black,
+                  foregroundColor: AppColors.surface1,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
-                    vertical: 15,
+                    vertical: 12,
                   ),
                   shape: const StadiumBorder(),
                 ),
@@ -119,8 +210,16 @@ class BottomInputArea extends ConsumerWidget {
                         fontSize: 16,
                       ),
                     ),
-                    SizedBox(width: 4),
-                    Icon(Icons.diamond, size: 18),
+                    const SizedBox(width: 4),
+                    SvgPicture.asset(
+                      'assets/icons/credit.svg',
+                      width: 12,
+                      height: 12,
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.surface1,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -134,16 +233,33 @@ class BottomInputArea extends ConsumerWidget {
 
   Widget _buildUploadButton() {
     return Center(
-      child: Container(
-        width: 60,
-        height: 60,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          color: AppColors.surface3,
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.surface4, width: 1.5),
+      child: Material(
+        color: AppColors.surface3,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () {
+            // TODO: Implement file upload logic here
+          },
+          child: Container(
+            width: 50,
+            height: 50,
+
+            // 7. THE BUTTON FIX: Removed the `margin: EdgeInsets.only(right: 16)`!
+            // The space is now handled internally by the ListView's left padding,
+            // allowing the fade to happen directly next to the button.
+            alignment: Alignment.center,
+            child: SvgPicture.asset(
+              'assets/icons/upload.svg',
+              width: 20,
+              height: 20,
+              colorFilter: const ColorFilter.mode(
+                AppColors.textPrimary,
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
         ),
-        child: const Icon(Icons.upload_outlined, color: Colors.white, size: 28),
       ),
     );
   }
@@ -164,87 +280,76 @@ class BottomInputArea extends ConsumerWidget {
         bottomColor = Colors.grey;
     }
 
-    return Center(
+    return Container(
+      width: 58,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+
+        color: bottomColor,
+      ),
+      padding: const EdgeInsets.only(bottom: 2.0),
       child: Container(
-        width: 76,
-        height: 86,
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: bottomColor,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(10),
+            bottom: Radius.circular(10),
+          ),
+          color: Color(0xFF424242),
         ),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 4.0),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.grey[800],
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Opacity(
+              opacity: 0.85,
+              child: SafeNetworkImage(
+                'https://picsum.photos/seed/${type}doc/100/100',
+                fit: BoxFit.cover,
+              ),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black26, Colors.transparent, Colors.black87],
+                  stops: [0.0, 0.4, 1.0],
+                ),
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Opacity(
-                  opacity: 0.85,
-                  child: SafeNetworkImage(
-                    'https://picsum.photos/seed/${type}doc/100/100',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black26,
-                        Colors.transparent,
-                        Colors.black87,
-                      ],
-                      stops: [0.0, 0.4, 1.0],
+                const Spacer(),
+                Center(
+                  child: Text(
+                    type.toLowerCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
                     ),
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Spacer(),
-                    Center(
-                      child: Text(
-                        type.toLowerCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(color: Colors.black54, blurRadius: 4),
-                          ],
-                        ),
-                      ),
+                const Spacer(),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 6.0, left: 8.0, right: 8.0),
+                  child: Text(
+                    "test_file..",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const Spacer(),
-                    const Padding(
-                      padding: EdgeInsets.only(
-                        bottom: 8.0,
-                        left: 8.0,
-                        right: 8.0,
-                      ),
-                      child: Text(
-                        "test_file..",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );

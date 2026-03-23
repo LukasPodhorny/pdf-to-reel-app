@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdftoreel/safe_network_image.dart';
 import '../../constants.dart';
 import '../ui_providers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class TopBar extends ConsumerWidget {
   const TopBar({super.key});
@@ -12,79 +14,98 @@ class TopBar extends ConsumerWidget {
     final diamondCount = ref.watch(diamondCountProvider);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: SizedBox(
         height: 50,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Left: Profile Placeholder
-            Container(
-              width: 42,
-              height: 42,
-              decoration: const BoxDecoration(
-                color: AppColors.surface1,
-                shape: BoxShape.circle,
+            GestureDetector(
+              onTap: () {
+                Scaffold.of(context).openDrawer();
+              },
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: const BoxDecoration(
+                  color: AppColors.surface1,
+                  shape: BoxShape.circle,
+                ),
+                // 1. THE FIX: Forces the child image to obey the BoxShape.circle
+                clipBehavior: Clip.antiAlias,
+
+                child: SafeNetworkImage(
+                  'https://lh3.googleusercontent.com/a/ACg8ocLOt8f8l8oCHwobmVRCCBZrkAcdmwHakrZ2c0tkFlB5a4-TG59a=s576-c-no',
+                  // 2. EXTRA TIP: Add fit: BoxFit.cover so the image fills the
+                  // entire circle perfectly without stretching or leaving empty space!
+                  fit: BoxFit.cover,
+                ),
               ),
-              child: const Icon(Icons.person, color: Colors.white, size: 26),
             ),
 
             // Center: Custom Toggle
             Container(
-              height: 46,
-              width: 220,
-              // 👇 PADDING REMOVED HERE 👇
+              height: 38,
+              width: 180,
+              clipBehavior: Clip
+                  .antiAlias, // strictly crops everything to the rounded bounds
               decoration: BoxDecoration(
-                color: AppColors.surface1,
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.surface2, width: 1.5),
               ),
-              child: Stack(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 1. SLIDING BACKGROUND PILL
-                  AnimatedAlign(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                    alignment: isGenerateMode
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight,
-                    child: FractionallySizedBox(
-                      widthFactor: 0.5,
-                      child: Container(
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface2,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: AppColors.surface3,
-                            width: 1.5,
-                            strokeAlign: BorderSide.strokeAlignOutside,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // 2. FOREGROUND TEXT OPTIONS
-                  Row(
-                    children: [
-                      Expanded(
+                  Expanded(
+                    child: Material(
+                      color: isGenerateMode
+                          ? AppColors.surface2
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      child: InkWell(
+                        highlightColor: Colors.transparent,
+                        splashColor: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () {
+                          ref.read(isGenerateModeProvider.notifier).state =
+                              true;
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
+                        },
                         child: _buildToggleOption(
                           "generate",
                           true,
                           isGenerateMode,
-                          ref,
                         ),
                       ),
-                      Expanded(
+                    ),
+                  ),
+                  Expanded(
+                    child: Material(
+                      color: !isGenerateMode
+                          ? AppColors.surface2
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      child: InkWell(
+                        highlightColor: Colors.transparent,
+                        splashColor: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () {
+                          ref.read(isGenerateModeProvider.notifier).state =
+                              false;
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
+                        },
                         child: _buildToggleOption(
                           "videos",
                           false,
                           isGenerateMode,
-                          ref,
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -101,16 +122,15 @@ class TopBar extends ConsumerWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 6),
-                Transform.rotate(
-                  angle: 0.785398, // 45 degrees
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: AppColors.textPrimary,
-                      borderRadius: BorderRadius.all(Radius.circular(2)),
-                    ),
+                const SizedBox(width: 5),
+                SvgPicture.asset(
+                  'assets/icons/credit.svg', // Make sure this matches your file path!
+                  width: 12,
+                  height: 12,
+                  // This safely applies AppColors.surface1 to the entire SVG shape
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.textPrimary,
+                    BlendMode.srcIn,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -122,29 +142,19 @@ class TopBar extends ConsumerWidget {
     );
   }
 
-  Widget _buildToggleOption(
-    String text,
-    bool isForGenerate,
-    bool currentMode,
-    WidgetRef ref,
-  ) {
+  Widget _buildToggleOption(String text, bool isForGenerate, bool currentMode) {
     bool isActive = currentMode == isForGenerate;
-    return GestureDetector(
-      onTap: () =>
-          ref.read(isGenerateModeProvider.notifier).state = isForGenerate,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        alignment: Alignment.center,
-        child: AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 200),
-          style: TextStyle(
-            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
-            fontSize: 19,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3,
-          ),
-          child: Text(text),
+    return Container(
+      alignment: Alignment.center,
+      child: AnimatedDefaultTextStyle(
+        duration: const Duration(milliseconds: 200),
+        style: TextStyle(
+          color: isActive ? AppColors.textPrimary : AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.3,
         ),
+        child: Text(text),
       ),
     );
   }

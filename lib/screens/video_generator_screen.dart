@@ -26,38 +26,40 @@ class _VideoGeneratorScreenState extends ConsumerState<VideoGeneratorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Tracks the keyboard height dynamically
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // Prevents resizing the background when keyboard opens
+      // Prevents the base layout from squishing when the keyboard opens
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // --- Background Layer (Static) ---
-          SafeArea(
-            bottom: false,
-            child: Column(
+
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Column(
               children: [
-                const SizedBox(height: 10),
-                const TopBar(),
-                const SizedBox(height: 20),
                 const ProfileSelector(),
                 const CustomSlider(),
-                Expanded(child: VideoCarousel(controller: _pageController)),
-                const SizedBox(height: 160),
+                const Expanded(child: VideoCarousel()),
+
+                // Reserves the resting space for the BottomInputArea (~192px)
+                // so the carousel doesn't overlap it when the keyboard is closed.
+                const SizedBox(height: 192),
               ],
             ),
-          ),
 
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: keyboardHeight,
-            child: const BottomInputArea(),
-          ),
-        ],
+            // THE FRONT LAYER FIX: Completely detaches the input area from the Column.
+            // It now anchors to the bottom and grows UPWARDS freely over the carousel!
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: keyboardHeight,
+              child: const BottomInputArea(),
+            ),
+          ],
+        ),
       ),
     );
   }

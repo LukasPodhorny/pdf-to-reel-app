@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'screens/home_screen.dart'; // <-- Update import
+import 'screens/login_screen.dart';
 import 'constants.dart';
-import 'screens/video_generator_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -15,12 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PDF to Reel',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color.fromRGBO(30, 30, 30, 1),
-        useMaterial3: true,
-      ),
-      home: const VideoGeneratorScreen(),
+      theme: AppTheme.darkTheme,
+      home: const LoginScreen(), // Start at the login screen
     );
   }
 }
