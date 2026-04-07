@@ -4,6 +4,8 @@ import 'package:pdftoreel/safe_network_image.dart';
 import '../../constants.dart';
 import '../ui_providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../services/user_service.dart';
+import '../services/auth_service.dart';
 
 class TopBar extends ConsumerWidget {
   const TopBar({super.key});
@@ -11,7 +13,8 @@ class TopBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isGenerateMode = ref.watch(isGenerateModeProvider);
-    final diamondCount = ref.watch(diamondCountProvider);
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final currentUser = ref.watch(authServiceProvider).currentUser;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
@@ -20,7 +23,7 @@ class TopBar extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Left: Profile Placeholder
+            // Left: Profile Picture
             GestureDetector(
               onTap: () {
                 Scaffold.of(context).openDrawer();
@@ -32,15 +35,13 @@ class TopBar extends ConsumerWidget {
                   color: AppColors.surface1,
                   shape: BoxShape.circle,
                 ),
-                // 1. THE FIX: Forces the child image to obey the BoxShape.circle
                 clipBehavior: Clip.antiAlias,
-
-                child: SafeNetworkImage(
-                  'https://lh3.googleusercontent.com/a/ACg8ocLOt8f8l8oCHwobmVRCCBZrkAcdmwHakrZ2c0tkFlB5a4-TG59a=s576-c-no',
-                  // 2. EXTRA TIP: Add fit: BoxFit.cover so the image fills the
-                  // entire circle perfectly without stretching or leaving empty space!
-                  fit: BoxFit.cover,
-                ),
+                child: currentUser?.photoURL != null
+                    ? SafeNetworkImage(
+                        currentUser!.photoURL!,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(Icons.person, color: AppColors.textSecondary, size: 24),
               ),
             ),
 
@@ -48,8 +49,7 @@ class TopBar extends ConsumerWidget {
             Container(
               height: 38,
               width: 180,
-              clipBehavior: Clip
-                  .antiAlias, // strictly crops everything to the rounded bounds
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
@@ -111,11 +111,14 @@ class TopBar extends ConsumerWidget {
               ),
             ),
 
-            // Right: Diamond Count
+            // Right: Credit Count
             Row(
               children: [
                 Text(
-                  "$diamondCount",
+                  userProfileAsync.maybeWhen(
+                    data: (profile) => "${profile.credits}",
+                    orElse: () => "...",
+                  ),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -124,10 +127,9 @@ class TopBar extends ConsumerWidget {
                 ),
                 const SizedBox(width: 5),
                 SvgPicture.asset(
-                  'assets/icons/credit.svg', // Make sure this matches your file path!
+                  'assets/icons/credit.svg',
                   width: 12,
                   height: 12,
-                  // This safely applies AppColors.surface1 to the entire SVG shape
                   colorFilter: const ColorFilter.mode(
                     AppColors.textPrimary,
                     BlendMode.srcIn,

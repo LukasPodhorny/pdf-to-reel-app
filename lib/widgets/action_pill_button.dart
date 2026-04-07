@@ -6,7 +6,7 @@ class ActionPillButton extends StatelessWidget {
   final Color textColor;
   final Color? borderColor;
   final Widget? icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final FontWeight fontWeight;
 
   const ActionPillButton({
@@ -14,7 +14,7 @@ class ActionPillButton extends StatelessWidget {
     required this.text,
     required this.backgroundColor,
     required this.textColor,
-    required this.onPressed,
+    this.onPressed,
     this.borderColor,
     this.icon,
     this.fontWeight = FontWeight.normal,
@@ -30,6 +30,7 @@ class ActionPillButton extends StatelessWidget {
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
           elevation: 0,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
             side: borderColor != null

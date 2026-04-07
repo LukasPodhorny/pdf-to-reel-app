@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "600901568590",
+    "project_id": "pdf-to-reel-auth",
+    "storage_bucket": "pdf-to-reel-auth.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:600901568590:android:3974c374a9d0447f7fdb1f",
+        "android_client_info": {
+          "package_name": "com.example.pdftoreel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "600901568590-f195k3kipdk4512no0ab2a6i4ouitcbn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEKpX7Exnyl8mFFQwkyfNWP46DOOlHHZA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "600901568590-f195k3kipdk4512no0ab2a6i4ouitcbn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "600901568590-aosmp83ia5vhnedff0pu56adkcv36km5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.pdftoreel"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

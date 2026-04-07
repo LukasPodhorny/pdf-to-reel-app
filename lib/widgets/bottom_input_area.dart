@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../constants.dart';
 import '../ui_providers.dart';
-import '../safe_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../services/video_service.dart';
 
 class BottomInputArea extends ConsumerStatefulWidget {
-  const BottomInputArea({super.key});
+  const BottomInputArea({super.key, this.onHeightChanged});
+
+  final ValueChanged<double>? onHeightChanged;
 
   @override
   ConsumerState<BottomInputArea> createState() => _BottomInputAreaState();
@@ -14,16 +18,120 @@ class BottomInputArea extends ConsumerStatefulWidget {
 
 class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _promptController = TextEditingController();
+  bool _isUploading = false;
+  bool _isGenerating = false;
+  double? _lastReportedHeight;
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _promptController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'txt', 'docx', 'pptx'],
+    );
+
+    if (result != null) {
+      setState(() => _isUploading = true);
+      try {
+        final file = File(result.files.single.path!);
+        final videoService = ref.read(videoServiceProvider);
+        final key = await videoService.uploadFile(file);
+
+        ref
+            .read(uploadedFileKeysProvider.notifier)
+            .update((state) => [...state, key]);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
+      }
+    }
+  }
+
+  Future<void> _startGeneration() async {
+    final templateName = ref.read(selectedTemplateNameProvider);
+    final avatarNames = ref.read(selectedAvatarNamesProvider).toList();
+    final prompt = _promptController.text;
+    final files = ref.read(uploadedFileKeysProvider);
+    final reelCount = ref.read(reelCountProvider).toInt();
+
+    if (templateName == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a template')));
+      return;
+    }
+
+    if (avatarNames.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one avatar')),
+      );
+      return;
+    }
+
+    setState(() => _isGenerating = true);
+    try {
+      final videoService = ref.read(videoServiceProvider);
+      await videoService.startGeneration(
+        templateName: templateName,
+        avatarNames: avatarNames,
+        amount: reelCount,
+        inputText: prompt,
+        files: files,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Generation started! Check your reels.'),
+          ),
+        );
+        _promptController.clear();
+        ref.read(uploadedFileKeysProvider.notifier).state = [];
+        ref.read(isGenerateModeProvider.notifier).state = false;
+        ref.invalidate(seriesListProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start generation: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isGenerating = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final diamondCount = ref.watch(diamondCountProvider);
+    final uploadedKeys = ref.watch(uploadedFileKeysProvider);
+    final selectedTemplate = ref.watch(selectedTemplateProvider);
+    final reelCount = ref.watch(reelCountProvider).toInt();
+    final totalCost = selectedTemplate != null
+        ? selectedTemplate.credits * reelCount
+        : 0;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || widget.onHeightChanged == null) return;
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox) return;
+      final height = renderObject.size.height;
+      if (_lastReportedHeight == null ||
+          (height - _lastReportedHeight!).abs() > 1) {
+        _lastReportedHeight = height;
+        widget.onHeightChanged!(height);
+      }
+    });
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -38,233 +146,168 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 88,
-            // 1. THE PARENT PAD FIX: Kept left at 16 for the button, but changed right to 0!
-            // This allows the list to stretch fully to the right edge for the fade.
-            padding: const EdgeInsets.only(
-              left: 18,
-              right: 1,
-              top: 8,
-              bottom: 4,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (uploadedKeys.isNotEmpty) ...[
+              SizedBox(
+                height: 60,
+                child: RawScrollbar(
+                  controller: _scrollController,
+                  thumbColor: AppColors.surface4,
+                  radius: const Radius.circular(8),
+                  thickness: 3,
+                  thumbVisibility: true,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: uploadedKeys.length,
+                    itemBuilder: (context, index) {
+                      final key = uploadedKeys[index];
+                      final ext = key.split('.').last;
+                      return _buildFilePreview(
+                        type: ext,
+                        key: key,
+                        onRemove: () {
+                          ref
+                              .read(uploadedFileKeysProvider.notifier)
+                              .update((state) {
+                            final updated = [...state];
+                            if (index >= 0 && index < updated.length) {
+                              updated.removeAt(index);
+                            }
+                            return updated;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextField(
+                controller: _promptController,
+                minLines: 1,
+                maxLines: 3,
+                onTapOutside: (PointerDownEvent event) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  height: 1.2,
+                ),
+                decoration: const InputDecoration(
+                  isDense: true,
+                  hintText: "Input prompt...",
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    height: 1.2,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.fromLTRB(8, 8, 8, 12),
+                ),
+              ),
             ),
-            decoration: BoxDecoration(
-              color: AppColors.surface2,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.surface2, width: 1.0),
-            ),
-
-            // 2. THE CURVE FIX: Forces the fading list to obey the 20px rounded corners on the right side
-            clipBehavior: Clip.antiAlias,
-
-            child: Row(
+            Row(
               children: [
                 _buildUploadButton(),
-
-                Expanded(
-                  child: RawScrollbar(
-                    controller: _scrollController,
-                    thumbColor: AppColors.surface4,
-                    radius: const Radius.circular(8),
-                    thickness: 3,
-
-                    // 3. THE SCROLLBAR FIX: Added 16px left/right so the thumb doesn't draw over the fade zones
-                    padding: const EdgeInsets.only(
-                      bottom: 2,
-                      left: 16,
-                      right: 16,
-                    ),
-                    thumbVisibility: true,
-
-                    // 4. THE SHADER MASK: Applies the exact same edge fade as your avatar selector
-                    child: ShaderMask(
-                      shaderCallback: (Rect rect) {
-                        return const LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black,
-                            Colors.black,
-                            Colors.transparent,
-                          ],
-                          stops: [
-                            0.0,
-                            0.08,
-                            0.92,
-                            1.0,
-                          ], // Tuned to perfectly cover the 16px padding
-                        ).createShader(rect);
-                      },
-                      blendMode: BlendMode.dstIn,
-
-                      child: ListView(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-
-                        // 5. THE BOUNCE FIX: Kills the hard Android edge-glow line
-                        physics: const ClampingScrollPhysics(),
-
-                        // 6. THE LIST PAD FIX: The 16px spacing was moved here!
-                        // The files will sit 16px away from the button and the right edge,
-                        // but glide smoothly into that space and fade out when scrolled.
-                        padding: const EdgeInsets.only(
-                          left: 16,
-                          right: 0,
-                          bottom: 8,
-                        ),
-
-                        children: [
-                          _buildFilePreview("pdf"),
-                          _buildFilePreview("pptx"),
-                          _buildFilePreview("doc"),
-                          _buildFilePreview("pdf"),
-                          _buildFilePreview("pdf"),
-                          _buildFilePreview("pdf"),
-                          const SizedBox(width: 4),
-                        ],
+                const Spacer(),
+                SizedBox(
+                  width: 75,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.neonGreen,
+                      foregroundColor: AppColors.surface1,
+                      disabledBackgroundColor: AppColors.neonGreen,
+                      disabledForegroundColor: AppColors.surface1,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
                       ),
+                      shape: const StadiumBorder(),
                     ),
+                    onPressed: (_isUploading || _isGenerating)
+                        ? () {}
+                        : _startGeneration,
+                    child: _isGenerating
+                        ? const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.surface1,
+                              ),
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "$totalCost",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              SvgPicture.asset(
+                                'assets/icons/credit.svg',
+                                width: 12,
+                                height: 12,
+                                colorFilter: const ColorFilter.mode(
+                                  AppColors.surface1,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ],
             ),
-          ),
-
-          const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: TextField(
-                  minLines: 1,
-                  maxLines: 3,
-                  onTapOutside: (PointerDownEvent event) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    height: 1.2,
-                  ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    hintText: "Input prompt...",
-                    hintStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                      height: 1.2,
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surface2,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide(
-                        color: AppColors.surface2,
-                        width: 1.0,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide(
-                        color: AppColors.surface2,
-                        width: 1.0,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide(
-                        color: AppColors.surface2,
-                        width: 1.0,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.neonGreen,
-                  foregroundColor: AppColors.surface1,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  shape: const StadiumBorder(),
-                ),
-                onPressed: () {},
-                child: Row(
-                  children: [
-                    Text(
-                      "$diamondCount",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    SvgPicture.asset(
-                      'assets/icons/credit.svg',
-                      width: 12,
-                      height: 12,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.surface1,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-        ],
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildUploadButton() {
-    return Center(
-      child: Material(
-        color: AppColors.surface3,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: () {
-            // TODO: Implement file upload logic here
-          },
-          child: Container(
-            width: 50,
-            height: 50,
-
-            // 7. THE BUTTON FIX: Removed the `margin: EdgeInsets.only(right: 16)`!
-            // The space is now handled internally by the ListView's left padding,
-            // allowing the fade to happen directly next to the button.
-            alignment: Alignment.center,
-            child: SvgPicture.asset(
-              'assets/icons/upload.svg',
-              width: 20,
-              height: 20,
-              colorFilter: const ColorFilter.mode(
-                AppColors.textPrimary,
-                BlendMode.srcIn,
-              ),
-            ),
+    return Material(
+      color: AppColors.surface1,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: _isUploading ? null : _pickAndUploadFile,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(
+            child: _isUploading
+                ? const AppLoadingIndicator(size: 24, strokeWidth: 2)
+                : const Icon(Icons.add, color: AppColors.textPrimary, size: 24),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFilePreview(String type) {
+  Widget _buildFilePreview({
+    required String type,
+    required String key,
+    required VoidCallback onRemove,
+  }) {
     Color bottomColor;
     switch (type.toLowerCase()) {
       case 'pdf':
@@ -273,19 +316,25 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
       case 'pptx':
         bottomColor = const Color(0xFFFFB347);
         break;
+      case 'docx':
       case 'doc':
         bottomColor = const Color(0xFF779ECB);
+        break;
+      case 'txt':
+        bottomColor = Colors.green;
         break;
       default:
         bottomColor = Colors.grey;
     }
 
+    final filename = key.split('/').last;
+
     return Container(
-      width: 58,
-      margin: const EdgeInsets.only(right: 12),
+      width: 50,
+      height: 56,
+      margin: const EdgeInsets.only(right: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-
         color: bottomColor,
       ),
       padding: const EdgeInsets.only(bottom: 2.0),
@@ -301,11 +350,14 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Opacity(
-              opacity: 0.85,
-              child: SafeNetworkImage(
-                'https://picsum.photos/seed/${type}doc/100/100',
-                fit: BoxFit.cover,
+            Container(
+              color: AppColors.surface2,
+              child: Center(
+                child: Icon(
+                  _getIconForType(type),
+                  color: Colors.white24,
+                  size: 24,
+                ),
               ),
             ),
             Container(
@@ -318,6 +370,27 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
                 ),
               ),
             ),
+            Positioned(
+              top: 2,
+              right: 2,
+              child: GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.close,
+                    size: 11,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -327,20 +400,24 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
                     type.toLowerCase(),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
                     ),
                   ),
                 ),
                 const Spacer(),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 6.0, left: 8.0, right: 8.0),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 5.0,
+                    left: 6.0,
+                    right: 6.0,
+                  ),
                   child: Text(
-                    "test_file..",
-                    style: TextStyle(
+                    filename,
+                    style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 11,
+                      fontSize: 9,
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
@@ -353,5 +430,21 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
         ),
       ),
     );
+  }
+
+  IconData _getIconForType(String type) {
+    switch (type.toLowerCase()) {
+      case 'pdf':
+        return Icons.picture_as_pdf;
+      case 'pptx':
+        return Icons.slideshow;
+      case 'docx':
+      case 'doc':
+        return Icons.description;
+      case 'txt':
+        return Icons.text_snippet;
+      default:
+        return Icons.insert_drive_file;
+    }
   }
 }

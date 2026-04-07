@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:dio/dio.dart';
 import '../constants.dart';
 import '../models/reel_models.dart';
 
@@ -16,26 +19,26 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _controller;
   bool _showControls = true;
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
   Timer? _controlsTimer;
 
   @override
   void initState() {
     super.initState();
-    // Assumes `widget.reel.videoUrl` exists and is a valid video URL.
-    _controller =
-        VideoPlayerController.networkUrl(Uri.parse(widget.reel.videoUrl))
-          ..initialize().then((_) {
-            // Ensure the first frame is shown after the video is initialized.
-            setState(() {});
-            _controller.play();
-            _startControlsTimer();
-          })
-          ..addListener(() {
-            // Update the UI whenever the controller's value changes.
-            if (mounted) {
-              setState(() {});
-            }
-          });
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.reel.cloudflareR2Url ?? ''),
+    )
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+        _startControlsTimer();
+      })
+      ..addListener(() {
+        if (mounted) {
+          setState(() {});
+        }
+      });
   }
 
   @override
@@ -71,9 +74,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     setState(() {
       if (_controller.value.isPlaying) {
         _controller.pause();
-        _controlsTimer?.cancel(); // Keep controls visible when paused.
+        _controlsTimer?.cancel();
       } else {
-        // If the video is at the end, restart it.
         if (_controller.value.position >= _controller.value.duration) {
           _controller.seekTo(Duration.zero);
         }
@@ -90,6 +92,80 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     return '$minutes:$seconds';
   }
 
+  Future<void> _downloadVideo() async {
+    final url = widget.reel.cloudflareR2Url;
+    if (url == null || url.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No video URL available')),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+    });
+
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName =
+          'reel_${widget.reel.id}_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      final filePath = '${directory.path}/$fileName';
+
+      final dio = Dio();
+      await dio.download(
+        url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1 && mounted) {
+            setState(() {
+              _downloadProgress = received / total;
+            });
+          }
+        },
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Video downloaded successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to download: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _downloadProgress = 0.0;
+        });
+      }
+    }
+  }
+
+  Future<void> _shareVideo() async {
+    final url = widget.reel.cloudflareR2Url;
+    if (url == null || url.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No video URL available')),
+        );
+      }
+      return;
+    }
+
+    final title = widget.reel.title ?? 'Video Reel';
+    await Share.share(
+      '$title\n\n$url',
+      subject: title,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isInitialized = _controller.value.isInitialized;
@@ -102,7 +178,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // 1. VIDEO PLAYER
             if (isInitialized)
               Center(
                 child: AspectRatio(
@@ -111,11 +186,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                 ),
               )
             else
-              const Center(
-                child: CircularProgressIndicator(color: AppColors.neonGreen),
-              ),
-
-            // UI Controls Overlay
+              const Center(child: AppLoadingIndicator()),
             AnimatedOpacity(
               opacity: _showControls ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 250),
@@ -126,22 +197,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black54,
-                        Colors.transparent,
-                        Colors.black87,
-                      ],
+                      colors: [Colors.black54, Colors.transparent, Colors.black87],
                       stops: [0.0, 0.4, 0.9],
                     ),
                   ),
                   child: Stack(
                     children: [
-                      // 2. PLAY/PAUSE ICON
                       if (isInitialized)
                         Center(
                           child: IconButton(
                             icon: Icon(
-                              isPlaying ? Icons.pause : Icons.play_arrow,
+                              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                               color: Colors.white,
                               size: 60,
                             ),
@@ -155,8 +221,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             ),
                           ),
                         ),
-
-                      // 3. TOP CONTROLS (X and Download)
                       SafeArea(
                         child: Align(
                           alignment: Alignment.topCenter,
@@ -169,30 +233,43 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                    size: 30,
-                                  ),
+                                  icon: const Icon(Icons.close,
+                                      color: Colors.white, size: 30),
                                   onPressed: () => Navigator.pop(context),
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.download,
-                                    color: Colors.white,
-                                    size: 30,
-                                  ),
-                                  onPressed: () {
-                                    // Handle download
-                                  },
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.share,
+                                          color: Colors.white, size: 28),
+                                      onPressed: _shareVideo,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: _isDownloading
+                                          ? SizedBox(
+                                              width: 34,
+                                              height: 30,
+                                              child: CircularProgressIndicator(
+                                                value: _downloadProgress,
+                                                strokeWidth: 2,
+                                                color: AppColors.neonGreen,
+                                                backgroundColor: Colors.white24,
+                                                year2023: false,
+                                              ),
+                                            )
+                                          : const Icon(Icons.download,
+                                              color: Colors.white, size: 30),
+                                      onPressed:
+                                          _isDownloading ? null : _downloadVideo,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
-
-                      // 4. PROGRESS BAR & TIME
                       if (isInitialized)
                         SafeArea(
                           child: Align(
@@ -212,39 +289,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                       inactiveTrackColor: Colors.white38,
                                       thumbColor: AppColors.neonGreen,
                                       trackHeight: 2.0,
-                                      thumbShape: const RoundSliderThumbShape(
+                                      thumbShape:
+                                          const RoundSliderThumbShape(
                                         enabledThumbRadius: 6.0,
                                       ),
                                       overlayShape:
                                           const RoundSliderOverlayShape(
-                                            overlayRadius: 14.0,
-                                          ),
+                                        overlayRadius: 14.0,
+                                      ),
                                     ),
                                     child: Slider(
-                                      value: _controller
-                                          .value
-                                          .position
+                                      value: _controller.value.position
                                           .inMilliseconds
                                           .toDouble()
                                           .clamp(
-                                            0.0,
-                                            _controller
-                                                .value
-                                                .duration
-                                                .inMilliseconds
-                                                .toDouble(),
-                                          ),
-                                      max:
-                                          _controller
-                                                  .value
-                                                  .duration
+                                        0.0,
+                                        _controller.value.duration
+                                            .inMilliseconds
+                                            .toDouble(),
+                                      ),
+                                      max: _controller.value.duration
                                                   .inMilliseconds >
                                               0
-                                          ? _controller
-                                                .value
-                                                .duration
-                                                .inMilliseconds
-                                                .toDouble()
+                                          ? _controller.value.duration
+                                              .inMilliseconds.toDouble()
                                           : 1.0,
                                       onChanged: (val) async {
                                         await _controller.seekTo(
@@ -258,16 +326,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                    ),
+                                        horizontal: 8.0),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           _formatDuration(
-                                            _controller.value.position,
-                                          ),
+                                              _controller.value.position),
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 12,
@@ -275,8 +341,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                         ),
                                         Text(
                                           _formatDuration(
-                                            _controller.value.duration,
-                                          ),
+                                              _controller.value.duration),
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 12,

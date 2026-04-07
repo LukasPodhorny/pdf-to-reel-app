@@ -1,34 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pdftoreel/constants.dart';
+import 'package:pdftoreel/services/auth_service.dart';
 import 'home_screen.dart';
 import 'create_account_screen.dart';
 import 'email_login_screen.dart';
 import '../widgets/action_pill_button.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  bool _isLoading = false;
+
+  Future<void> _loginWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authServiceProvider).signInWithGoogle();
+      // Navigation is handled by StreamBuilder in main.dart
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Google Sign-In failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background, // Darkest background
+      backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            // Top section with Logo
             Expanded(
               child: Center(
-                child: Image.asset(
-                  'assets/icons/logo.png',
+                child: SvgPicture.asset(
+                  'assets/icons/logo.svg',
                   width: 190,
                   height: 182,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.neonGreen,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),
-
-            // Bottom section with buttons
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(
@@ -38,7 +64,7 @@ class LoginScreen extends StatelessWidget {
                 bottom: 30.0,
               ),
               decoration: const BoxDecoration(
-                color: AppColors.surface1, // Slightly lighter dark background
+                color: AppColors.surface1,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 boxShadow: [
                   BoxShadow(
@@ -53,42 +79,27 @@ class LoginScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Continue with Google Button
                     ActionPillButton(
                       text: 'Continue with Google',
-                      backgroundColor: AppColors.neonGreen, // Bright Green
+                      backgroundColor: AppColors.neonGreen,
                       textColor: AppColors.background,
                       fontWeight: FontWeight.w600,
-                      // Note: You might want to use a Google logo asset here instead of an Icon
                       icon: SvgPicture.asset(
                         'assets/icons/google.svg',
                         width: 23,
                         height: 23,
-                        // If you want to force a color on the SVG, uncomment the line below:
-                        // colorFilter: const ColorFilter.mode(Color(0xFF3CD249), BlendMode.srcIn),
                       ),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HomeScreen(),
-                          ),
-                        );
-                      },
+                      onPressed: _isLoading ? null : _loginWithGoogle,
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Sign up with email Button
                     ActionPillButton(
                       text: 'Sign up with email',
-                      backgroundColor: AppColors.surface2, // Dark Gray
+                      backgroundColor: AppColors.surface2,
                       textColor: AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
                       icon: SvgPicture.asset(
                         'assets/icons/mail.svg',
                         width: 22,
-                        // If you want to force a color on the SVG, uncomment the line below:
-                        // colorFilter: const ColorFilter.mode(Color(0xFF3CD249), BlendMode.srcIn),
                       ),
                       onPressed: () {
                         Navigator.push(
@@ -100,14 +111,12 @@ class LoginScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16.0),
-
-                    // Log in Button
                     ActionPillButton(
                       text: 'Log in',
                       backgroundColor: Colors.transparent,
                       textColor: AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
-                      borderColor: AppColors.textSecondary, // Outline Color
+                      borderColor: AppColors.textSecondary,
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -117,6 +126,11 @@ class LoginScreen extends StatelessWidget {
                         );
                       },
                     ),
+                    if (_isLoading)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Center(child: AppLoadingIndicator()),
+                      ),
                   ],
                 ),
               ),

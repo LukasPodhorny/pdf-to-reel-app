@@ -36,14 +36,7 @@ class VideoCard extends StatelessWidget {
           ),
           if (title == null)
             const Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: Colors.white,
-                ),
-              ),
+              child: AppLoadingIndicator(size: 24, strokeWidth: 3),
             )
           else
             Padding(

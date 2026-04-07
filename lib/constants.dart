@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+class AppConstants {
+  static const String apiBaseUrl = 'https://api.pdftoreel.com'; // Update this to your real URL
+}
+
 class AppColors {
   // Backgrounds & Surfaces
   static const Color background = Color(0xFF141414);
@@ -28,6 +32,32 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.scaffoldBackground,
       useMaterial3: true,
+    );
+  }
+}
+
+class AppLoadingIndicator extends StatelessWidget {
+  final double size;
+  final double strokeWidth;
+  final Color? color;
+
+  const AppLoadingIndicator({
+    super.key,
+    this.size = 50.0,
+    this.strokeWidth = 3.0,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CircularProgressIndicator(
+        strokeWidth: strokeWidth,
+        color: color ?? AppColors.textPrimary,
+        year2023: false,
+      ),
     );
   }
 }
