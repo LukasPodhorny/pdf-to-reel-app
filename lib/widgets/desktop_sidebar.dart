@@ -25,9 +25,7 @@ class DesktopSidebar extends ConsumerWidget {
       width: 260,
       decoration: const BoxDecoration(
         color: AppColors.surface1,
-        border: Border(
-          right: BorderSide(color: AppColors.surface3, width: 1),
-        ),
+        border: Border(right: BorderSide(color: AppColors.surface3, width: 1)),
       ),
       child: Column(
         children: [
@@ -36,25 +34,16 @@ class DesktopSidebar extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
             child: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.neonGreen,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: SvgPicture.asset(
-                      'assets/icons/logo.svg',
-                      width: 24,
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ),
+                SvgPicture.asset(
+                  'assets/icons/logo.svg',
+                  width: 30,
+                  height: 30,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.neonGreen,
+                    BlendMode.srcIn,
                   ),
                 ),
+
                 const SizedBox(width: 12),
                 const Text(
                   'PDF to Reel',
@@ -64,7 +53,7 @@ class DesktopSidebar extends ConsumerWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 30),
                 // Credits
                 userProfileAsync.maybeWhen(
                   data: (profile) => Row(
@@ -72,7 +61,7 @@ class DesktopSidebar extends ConsumerWidget {
                       Text(
                         '${profile.credits}',
                         style: const TextStyle(
-                          color: AppColors.textSecondary,
+                          color: AppColors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -83,7 +72,7 @@ class DesktopSidebar extends ConsumerWidget {
                         width: 10,
                         height: 10,
                         colorFilter: const ColorFilter.mode(
-                          AppColors.textSecondary,
+                          AppColors.textPrimary,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -215,8 +204,8 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
     final backgroundColor = widget.isSelected
         ? AppColors.neonGreen.withValues(alpha: 0.20)
         : _isHovered
-            ? AppColors.surface2
-            : Colors.transparent;
+        ? AppColors.surface2
+        : AppColors.surface2.withValues(alpha: 0);
 
     final contentColor = widget.isSelected
         ? AppColors.textPrimary
@@ -243,10 +232,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                 widget.svgAsset,
                 width: 22,
                 height: 22,
-                colorFilter: ColorFilter.mode(
-                  contentColor,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
               ),
               const SizedBox(width: 12),
               Text(

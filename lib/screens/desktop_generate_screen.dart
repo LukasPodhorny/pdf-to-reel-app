@@ -9,6 +9,7 @@ import '../ui_providers.dart';
 import '../services/video_service.dart';
 import '../safe_network_image.dart';
 import '../widgets/carousel_video_player.dart';
+import '../models/reel_models.dart';
 
 /// Desktop generate screen with 2-panel layout:
 /// Left: Video carousel + prompt input (clipped to not overlap sidebar)
@@ -152,7 +153,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
 
     return Column(
       children: [
-        // Carousel
+        // Carousel area
         Expanded(
           child: templatesAsync.when(
             data: (templates) {
@@ -177,148 +178,195 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
 
               return LayoutBuilder(
                 builder: (context, constraints) {
-                  // Shrink carousel to ~75% of available height to match Figma
-                  final carouselHeight = constraints.maxHeight * 0.78;
+                  final carouselHeight = constraints.maxHeight * 0.82;
                   final cardWidth = carouselHeight * (9 / 16);
                   const desiredGap = 20.0;
                   double dynamicFraction =
                       (cardWidth + desiredGap) / constraints.maxWidth;
                   dynamicFraction = dynamicFraction.clamp(0.15, 0.55);
 
-                  return Stack(
-                    clipBehavior: Clip.hardEdge,
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Center(
-                        child: CarouselSlider.builder(
-                          carouselController: _carouselController,
-                          itemCount: templates.length,
-                          options: CarouselOptions(
-                            height: carouselHeight,
-                            enlargeCenterPage: true,
-                            viewportFraction: dynamicFraction,
-                            enableInfiniteScroll: true,
-                            enlargeFactor: 0.18,
-                            clipBehavior: Clip.none,
-                            onPageChanged: (index, reason) {
-                              setState(() => _currentIndex = index);
-                              ref
-                                  .read(selectedTemplateNameProvider.notifier)
-                                  .state = templates[index]
-                                  .name;
-                              ref
-                                      .read(selectedTemplateProvider.notifier)
-                                      .state =
-                                  templates[index];
-                            },
-                          ),
-                          itemBuilder: (context, index, realIndex) {
-                            final template = templates[index];
-                            double diff = (_currentIndex - index)
-                                .abs()
-                                .toDouble();
-                            if (diff > templates.length / 2) {
-                              diff = templates.length - diff;
-                            }
-                            const double fade = 0.6;
-                            final fadeOpacity = (diff * fade).clamp(0.0, fade);
+                      // Carousel with arrows
+                      SizedBox(
+                        height: carouselHeight,
+                        child: Stack(
+                          clipBehavior: Clip.hardEdge,
+                          children: [
+                            Center(
+                              child: CarouselSlider.builder(
+                                carouselController: _carouselController,
+                                itemCount: templates.length,
+                                options: CarouselOptions(
+                                  height: carouselHeight,
+                                  enlargeCenterPage: true,
+                                  viewportFraction: dynamicFraction,
+                                  enableInfiniteScroll: true,
+                                  enlargeFactor: 0.18,
+                                  clipBehavior: Clip.none,
+                                  scrollPhysics: const BouncingScrollPhysics(),
+                                  onPageChanged: (index, reason) {
+                                    setState(() => _currentIndex = index);
+                                    ref
+                                        .read(selectedTemplateNameProvider.notifier)
+                                        .state = templates[index].name;
+                                    ref
+                                        .read(selectedTemplateProvider.notifier)
+                                        .state = templates[index];
+                                  },
+                                ),
+                                itemBuilder: (context, index, realIndex) {
+                                  final template = templates[index];
+                                  double diff = (_currentIndex - index)
+                                      .abs()
+                                      .toDouble();
+                                  if (diff > templates.length / 2) {
+                                    diff = templates.length - diff;
+                                  }
+                                  const double fade = 0.6;
+                                  final fadeOpacity =
+                                      (diff * fade).clamp(0.0, fade);
 
-                            return Center(
-                              child: AspectRatio(
-                                aspectRatio: 9 / 16,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: Colors.grey[900],
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      CarouselVideoPlayer(
-                                        isSelected: _currentIndex == index,
-                                        videoUrl: template.previewUrl,
-                                        thumbnailUrl: '',
-                                      ),
-                                      // Credit badge
-                                      Positioned(
-                                        top: 11,
-                                        right: 9,
-                                        child: Row(
+                                  return Center(
+                                    child: AspectRatio(
+                                      aspectRatio: 9 / 16,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          color: Colors.grey[900],
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Stack(
+                                          fit: StackFit.expand,
                                           children: [
-                                            Text(
-                                              '${template.credits}',
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 16,
-                                                shadows: [
-                                                  Shadow(
-                                                    blurRadius: 10,
-                                                    color: Color.fromARGB(
-                                                      150,
-                                                      0,
-                                                      0,
-                                                      0,
+                                            CarouselVideoPlayer(
+                                              isSelected:
+                                                  _currentIndex == index,
+                                              videoUrl: template.previewUrl,
+                                              thumbnailUrl: '',
+                                            ),
+                                            // Credit badge
+                                            Positioned(
+                                              top: 11,
+                                              right: 9,
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    '${template.credits}',
+                                                    style: const TextStyle(
+                                                      color:
+                                                          AppColors.textPrimary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 16,
+                                                      shadows: [
+                                                        Shadow(
+                                                          blurRadius: 10,
+                                                          color:
+                                                              Color.fromARGB(
+                                                            150,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  SvgPicture.asset(
+                                                    'assets/icons/credit.svg',
+                                                    width: 12,
+                                                    height: 12,
+                                                    colorFilter:
+                                                        const ColorFilter.mode(
+                                                      AppColors.textPrimary,
+                                                      BlendMode.srcIn,
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(width: 5),
-                                            SvgPicture.asset(
-                                              'assets/icons/credit.svg',
-                                              width: 12,
-                                              height: 12,
-                                              colorFilter:
-                                                  const ColorFilter.mode(
-                                                    AppColors.textPrimary,
-                                                    BlendMode.srcIn,
-                                                  ),
+                                            // Fade overlay for non-center items
+                                            IgnorePointer(
+                                              child: Container(
+                                                color: AppColors.background
+                                                    .withValues(
+                                                        alpha: fadeOpacity),
+                                              ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      // Fade overlay for non-center items
-                                      IgnorePointer(
-                                        child: Container(
-                                          color: AppColors.background
-                                              .withValues(alpha: fadeOpacity),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            // Left arrow
+                            Positioned(
+                              left: 16,
+                              top: 0,
+                              bottom: 0,
+                              child: Center(
+                                child: _CarouselArrow(
+                                  svgAsset:
+                                      'assets/icons/carousel_arrow.svg',
+                                  flipped: true,
+                                  onTap: () =>
+                                      _carouselController.previousPage(),
+                                ),
+                              ),
+                            ),
+                            // Right arrow
+                            Positioned(
+                              right: 16,
+                              top: 0,
+                              bottom: 0,
+                              child: Center(
+                                child: _CarouselArrow(
+                                  svgAsset:
+                                      'assets/icons/carousel_arrow.svg',
+                                  flipped: false,
+                                  onTap: () =>
+                                      _carouselController.nextPage(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Page indicator — fixed margin below carousel
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children:
+                              List.generate(templates.length, (index) {
+                            final isActive = _currentIndex == index;
+                            return GestureDetector(
+                              onTap: () => _carouselController
+                                  .animateToPage(index),
+                              child: AnimatedContainer(
+                                duration:
+                                    const Duration(milliseconds: 300),
+                                curve: Curves.easeOutCubic,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 5),
+                                width: isActive ? 28 : 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                  color: isActive
+                                      ? AppColors.textPrimary
+                                      : AppColors.surface1,
                                 ),
                               ),
                             );
-                          },
-                        ),
-                      ),
-
-                      // Left arrow — flip the SVG (it points right by default)
-                      Positioned(
-                        left: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: _CarouselArrow(
-                            svgAsset: 'assets/icons/carousel_arrow.svg',
-                            flipped: true,
-                            onTap: () => _carouselController.previousPage(),
-                          ),
-                        ),
-                      ),
-
-                      // Right arrow — natural direction
-                      Positioned(
-                        right: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: _CarouselArrow(
-                            svgAsset: 'assets/icons/carousel_arrow.svg',
-                            flipped: false,
-                            onTap: () => _carouselController.nextPage(),
-                          ),
+                          }),
                         ),
                       ),
                     ],
@@ -654,7 +702,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
     );
   }
 
-  Widget _buildAvatarGrid(AsyncValue avatarsAsync, Set<String> selectedNames) {
+  Widget _buildAvatarGrid(AsyncValue<List<Avatar>> avatarsAsync, Set<String> selectedNames) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface2,
@@ -693,17 +741,23 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
           Expanded(
             child: avatarsAsync.when(
               data: (avatars) {
-                final filtered = _avatarSearchQuery.isEmpty
+                final query = _avatarSearchQuery.toLowerCase();
+                final List<Avatar> filtered = query.isEmpty
                     ? avatars
-                    : avatars
-                          .where(
-                            (a) => a.name.toLowerCase().contains(
-                              _avatarSearchQuery.toLowerCase(),
-                            ),
-                          )
-                          .toList();
+                    : avatars.where((Avatar a) {
+                        final displayName = a.data['name']?.toString() ?? a.name;
+                        return displayName.toLowerCase().contains(query);
+                      }).toList();
 
-                return Scrollbar(
+                return ScrollbarTheme(
+                  data: ScrollbarThemeData(
+                    thickness: WidgetStatePropertyAll(3),
+                    radius: const Radius.circular(1.5),
+                    thumbColor: WidgetStatePropertyAll(
+                      AppColors.surface3.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  child: Scrollbar(
                   thumbVisibility: true,
                   child: GridView.builder(
                     padding: const EdgeInsets.only(right: 8),
@@ -799,6 +853,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                       );
                     },
                   ),
+                ),
                 );
               },
               loading: () => const Center(child: AppLoadingIndicator()),
@@ -827,7 +882,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
             children: [
               _costRow('template cost:', '$templateCost', showCredit: true),
               const SizedBox(height: 8),
-              _costRow('number of reels:', 'x$reelCount', showCredit: false),
+              _costRow('number of reels:', 'x $reelCount', showCredit: false),
             ],
           ),
         ),

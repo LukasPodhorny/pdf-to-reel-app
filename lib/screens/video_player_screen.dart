@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 import '../constants.dart';
 import '../models/reel_models.dart';
+import '../utils/platform_helper.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final Reel reel;
@@ -18,6 +20,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _controller;
+  final FocusNode _keyboardFocusNode = FocusNode();
   bool _showControls = true;
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
@@ -44,9 +47,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void dispose() {
     _controlsTimer?.cancel();
+    _keyboardFocusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
+
+  bool get _isDesktop => PlatformHelper.isDesktop;
 
   void _toggleControls() {
     setState(() {
@@ -57,6 +63,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         _controlsTimer?.cancel();
       }
     });
+  }
+
+  void _onMouseMove() {
+    if (!_showControls) {
+      setState(() => _showControls = true);
+    }
+    _startControlsTimer();
   }
 
   void _startControlsTimer() {
@@ -173,8 +186,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: _toggleControls,
+      body: KeyboardListener(
+        focusNode: _keyboardFocusNode,
+        autofocus: true,
+        onKeyEvent: _isDesktop ? (event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.escape) {
+              Navigator.pop(context);
+            } else if (event.logicalKey == LogicalKeyboardKey.space) {
+              _togglePlayPause();
+            }
+          }
+        } : null,
+        child: MouseRegion(
+        onHover: _isDesktop ? (_) => _onMouseMove() : null,
+        cursor: SystemMouseCursors.basic,
+        child: GestureDetector(
+        // On desktop: click toggles play/pause. On mobile: click toggles controls.
+        onTap: _isDesktop ? _togglePlayPause : _toggleControls,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -362,6 +391,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             ),
           ],
         ),
+      ),
+      ),
       ),
     );
   }
