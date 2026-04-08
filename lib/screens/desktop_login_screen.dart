@@ -81,7 +81,7 @@ class _DesktopLoginScreenState extends ConsumerState<DesktopLoginScreen> {
                   const SizedBox(height: 8),
                   // Subtitle
                   const Text(
-                    'Transform your PDFs into engaging videos',
+                    'Create engaging videos with AI',
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 16,
@@ -206,7 +206,7 @@ class _DesktopActionButtonState extends State<_DesktopActionButton> {
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
     final bgColor = _isHovered && !isDisabled
-        ? widget.backgroundColor.withValues(alpha: 0.85)
+        ? AppColors.surface2
         : widget.backgroundColor;
 
     return MouseRegion(
@@ -215,8 +215,7 @@ class _DesktopActionButtonState extends State<_DesktopActionButton> {
       cursor: isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.isLoading ? null : widget.onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           height: 56,
           decoration: BoxDecoration(
             color: bgColor,

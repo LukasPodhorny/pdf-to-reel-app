@@ -26,6 +26,7 @@ dependencies:
   google_sign_in: 6.2.1
   google_sign_in_web: ^0.12.3
   share_plus: ^10.1.4
+  url_launcher: ^6.3.2
 
 
 

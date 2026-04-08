@@ -51,6 +51,7 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
       _controllerCreated = true;
       await _controller.initialize();
       await _controller.setLooping(true);
+      await _controller.setVolume(0.0); // Mute for web autoplay policy
 
       if (mounted) {
         setState(() {

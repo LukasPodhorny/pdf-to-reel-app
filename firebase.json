@@ -1,1 +1,66 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"pdf-to-reel-auth","appId":"1:600901568590:android:3974c374a9d0447f7fdb1f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"pdf-to-reel-auth","configurations":{"android":"1:600901568590:android:3974c374a9d0447f7fdb1f","ios":"1:600901568590:ios:e012a38be1273ac07fdb1f","macos":"1:600901568590:ios:e012a38be1273ac07fdb1f","web":"1:600901568590:web:5953aaf6b9822bb87fdb1f","windows":"1:600901568590:web:5953aaf6b9822bb87fdb1f"}}}}}}
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "pdf-to-reel-auth",
+                    "appId": "1:600901568590:android:3974c374a9d0447f7fdb1f",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "pdf-to-reel-auth",
+                    "configurations": {
+                        "android": "1:600901568590:android:3974c374a9d0447f7fdb1f",
+                        "ios": "1:600901568590:ios:e012a38be1273ac07fdb1f",
+                        "macos": "1:600901568590:ios:e012a38be1273ac07fdb1f",
+                        "web": "1:600901568590:web:5953aaf6b9822bb87fdb1f",
+                        "windows": "1:600901568590:web:5953aaf6b9822bb87fdb1f"
+                    }
+                }
+            }
+        }
+    },
+    "hosting": [
+        {
+            "target": "landing",
+            "public": "landing",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ]
+        },
+        {
+            "target": "app",
+            "public": "build/web",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "headers": [
+                {
+                    "source": "/**",
+                    "headers": [
+                        {
+                            "key": "Cross-Origin-Opener-Policy",
+                            "value": "same-origin"
+                        },
+                        {
+                            "key": "Cross-Origin-Embedder-Policy",
+                            "value": "credentialless"
+                        }
+                    ]
+                }
+            ],
+            "rewrites": [
+                {
+                    "source": "**",
+                    "destination": "/index.html"
+                }
+            ]
+        }
+    ]
+}

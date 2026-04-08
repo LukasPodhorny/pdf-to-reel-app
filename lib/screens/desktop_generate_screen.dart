@@ -209,11 +209,17 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                                   onPageChanged: (index, reason) {
                                     setState(() => _currentIndex = index);
                                     ref
-                                        .read(selectedTemplateNameProvider.notifier)
-                                        .state = templates[index].name;
+                                        .read(
+                                          selectedTemplateNameProvider.notifier,
+                                        )
+                                        .state = templates[index]
+                                        .name;
                                     ref
-                                        .read(selectedTemplateProvider.notifier)
-                                        .state = templates[index];
+                                            .read(
+                                              selectedTemplateProvider.notifier,
+                                            )
+                                            .state =
+                                        templates[index];
                                   },
                                 ),
                                 itemBuilder: (context, index, realIndex) {
@@ -225,16 +231,19 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                                     diff = templates.length - diff;
                                   }
                                   const double fade = 0.6;
-                                  final fadeOpacity =
-                                      (diff * fade).clamp(0.0, fade);
+                                  final fadeOpacity = (diff * fade).clamp(
+                                    0.0,
+                                    fade,
+                                  );
 
                                   return Center(
                                     child: AspectRatio(
                                       aspectRatio: 9 / 16,
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                           color: Colors.grey[900],
                                         ),
                                         clipBehavior: Clip.antiAlias,
@@ -264,8 +273,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                                                       shadows: [
                                                         Shadow(
                                                           blurRadius: 10,
-                                                          color:
-                                                              Color.fromARGB(
+                                                          color: Color.fromARGB(
                                                             150,
                                                             0,
                                                             0,
@@ -282,9 +290,9 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                                                     height: 12,
                                                     colorFilter:
                                                         const ColorFilter.mode(
-                                                      AppColors.textPrimary,
-                                                      BlendMode.srcIn,
-                                                    ),
+                                                          AppColors.textPrimary,
+                                                          BlendMode.srcIn,
+                                                        ),
                                                   ),
                                                 ],
                                               ),
@@ -294,7 +302,8 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                                               child: Container(
                                                 color: AppColors.background
                                                     .withValues(
-                                                        alpha: fadeOpacity),
+                                                      alpha: fadeOpacity,
+                                                    ),
                                               ),
                                             ),
                                           ],
@@ -312,8 +321,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                               bottom: 0,
                               child: Center(
                                 child: _CarouselArrow(
-                                  svgAsset:
-                                      'assets/icons/carousel_arrow.svg',
+                                  svgAsset: 'assets/icons/carousel_arrow.svg',
                                   flipped: true,
                                   onTap: () =>
                                       _carouselController.previousPage(),
@@ -327,11 +335,9 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                               bottom: 0,
                               child: Center(
                                 child: _CarouselArrow(
-                                  svgAsset:
-                                      'assets/icons/carousel_arrow.svg',
+                                  svgAsset: 'assets/icons/carousel_arrow.svg',
                                   flipped: false,
-                                  onTap: () =>
-                                      _carouselController.nextPage(),
+                                  onTap: () => _carouselController.nextPage(),
                                 ),
                               ),
                             ),
@@ -343,23 +349,21 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                         padding: const EdgeInsets.only(top: 16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children:
-                              List.generate(templates.length, (index) {
+                          children: List.generate(templates.length, (index) {
                             final isActive = _currentIndex == index;
                             return GestureDetector(
-                              onTap: () => _carouselController
-                                  .animateToPage(index),
+                              onTap: () =>
+                                  _carouselController.animateToPage(index),
                               child: AnimatedContainer(
-                                duration:
-                                    const Duration(milliseconds: 300),
+                                duration: const Duration(milliseconds: 400),
                                 curve: Curves.easeOutCubic,
                                 margin: const EdgeInsets.symmetric(
-                                    horizontal: 5),
+                                  horizontal: 5,
+                                ),
                                 width: isActive ? 28 : 10,
                                 height: 10,
                                 decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                   color: isActive
                                       ? AppColors.textPrimary
                                       : AppColors.surface1,
@@ -664,45 +668,21 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
   }
 
   Widget _buildReelSlider(double value) {
-    return Column(
-      children: [
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            activeTrackColor: AppColors.neonGreen,
-            inactiveTrackColor: AppColors.surface3,
-            thumbColor: AppColors.textPrimary,
-            trackHeight: 4, // thinner to match Figma
-            tickMarkShape: SliderTickMarkShape.noTickMark,
-            overlayShape: SliderComponentShape.noOverlay,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-          ),
-          child: Slider(
-            value: value,
-            min: 1,
-            max: 7,
-            divisions: 6,
-            onChanged: (val) {
-              ref.read(reelCountProvider.notifier).state = val;
-            },
-          ),
-        ),
-        const SizedBox(height: 4),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            '${value.toInt()} reels',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
+    return _ReelCountSlider(
+      value: value.toInt(),
+      min: 0,
+      max: 7,
+      onChanged: (val) {
+        if (val < 1) return;
+        ref.read(reelCountProvider.notifier).state = val.toDouble();
+      },
     );
   }
 
-  Widget _buildAvatarGrid(AsyncValue<List<Avatar>> avatarsAsync, Set<String> selectedNames) {
+  Widget _buildAvatarGrid(
+    AsyncValue<List<Avatar>> avatarsAsync,
+    Set<String> selectedNames,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface2,
@@ -745,7 +725,8 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                 final List<Avatar> filtered = query.isEmpty
                     ? avatars
                     : avatars.where((Avatar a) {
-                        final displayName = a.data['name']?.toString() ?? a.name;
+                        final displayName =
+                            a.data['name']?.toString() ?? a.name;
                         return displayName.toLowerCase().contains(query);
                       }).toList();
 
@@ -758,102 +739,102 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                     ),
                   ),
                   child: Scrollbar(
-                  thumbVisibility: true,
-                  child: GridView.builder(
-                    padding: const EdgeInsets.only(right: 8),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 6,
-                          mainAxisSpacing: 6,
-                        ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final avatar = filtered[index];
-                      final isSelected = selectedNames.contains(avatar.name);
+                    thumbVisibility: true,
+                    child: GridView.builder(
+                      padding: const EdgeInsets.only(right: 8),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 6,
+                            mainAxisSpacing: 6,
+                          ),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final avatar = filtered[index];
+                        final isSelected = selectedNames.contains(avatar.name);
 
-                      return MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () {
-                            final current = ref.read(
-                              selectedAvatarNamesProvider,
-                            );
-                            if (current.contains(avatar.name)) {
-                              ref
-                                  .read(selectedAvatarNamesProvider.notifier)
-                                  .state = {...current}
-                                ..remove(avatar.name);
-                            } else {
-                              ref
-                                  .read(selectedAvatarNamesProvider.notifier)
-                                  .state = {...current}
-                                ..add(avatar.name);
-                            }
-                          },
-                          // Selection style matching mobile: white ring + green checkmark
-                          child: AnimatedScale(
-                            scale: isSelected ? 1.05 : 1.0,
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeOutBack,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 0),
-                              margin: EdgeInsets.all(isSelected ? 0.0 : 1.5),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.transparent,
-                                  width: isSelected ? 2.5 : 1.0,
-                                ),
-                              ),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Container(
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: AppColors.background,
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: SafeNetworkImage(
-                                      avatar.staticFaceUrl ??
-                                          avatar.faceUrl ??
-                                          '',
-                                      fit: BoxFit.cover,
-                                    ),
+                        return MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              final current = ref.read(
+                                selectedAvatarNamesProvider,
+                              );
+                              if (current.contains(avatar.name)) {
+                                ref
+                                    .read(selectedAvatarNamesProvider.notifier)
+                                    .state = {...current}
+                                  ..remove(avatar.name);
+                              } else {
+                                ref
+                                    .read(selectedAvatarNamesProvider.notifier)
+                                    .state = {...current}
+                                  ..add(avatar.name);
+                              }
+                            },
+                            // Selection style matching mobile: white ring + green checkmark
+                            child: AnimatedScale(
+                              scale: isSelected ? 1.05 : 1.0,
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOutBack,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 0),
+                                margin: EdgeInsets.all(isSelected ? 0.0 : 1.5),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                    width: isSelected ? 2.5 : 1.0,
                                   ),
-                                  if (isSelected)
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: AppColors.neonGreen,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: SvgPicture.asset(
-                                          'assets/icons/checkmark.svg',
-                                          width: 8,
-                                          height: 8,
-                                          colorFilter: const ColorFilter.mode(
-                                            AppColors.surface1,
-                                            BlendMode.srcIn,
+                                ),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.surface1,
+                                      ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: SafeNetworkImage(
+                                        avatar.staticFaceUrl ??
+                                            avatar.faceUrl ??
+                                            '',
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: AppColors.neonGreen,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: SvgPicture.asset(
+                                            'assets/icons/checkmark.svg',
+                                            width: 8,
+                                            height: 8,
+                                            colorFilter: const ColorFilter.mode(
+                                              AppColors.surface1,
+                                              BlendMode.srcIn,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
                 );
               },
               loading: () => const Center(child: AppLoadingIndicator()),
@@ -1004,4 +985,252 @@ class _CarouselArrowState extends State<_CarouselArrow> {
       ),
     );
   }
+}
+
+// ─── Custom reel-count slider ──────────────────────────────────────────────
+
+class _ReelCountSlider extends StatefulWidget {
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  const _ReelCountSlider({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  @override
+  State<_ReelCountSlider> createState() => _ReelCountSliderState();
+}
+
+class _ReelCountSliderState extends State<_ReelCountSlider>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _thumbAnim;
+  bool _isDragging = false;
+  // Animated value for smooth thumb movement
+  double _animatedFraction = 0.0;
+
+  int get _steps => widget.max - widget.min;
+
+  @override
+  void initState() {
+    super.initState();
+    _thumbAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+      lowerBound: 0.0,
+      upperBound: 1.0,
+      value: 0.0,
+    );
+    _animatedFraction = _fractionFor(widget.value);
+  }
+
+  @override
+  void didUpdateWidget(_ReelCountSlider old) {
+    super.didUpdateWidget(old);
+    if (!_isDragging && old.value != widget.value) {
+      _animatedFraction = _fractionFor(widget.value);
+    }
+  }
+
+  @override
+  void dispose() {
+    _thumbAnim.dispose();
+    super.dispose();
+  }
+
+  double _fractionFor(int v) => (v - widget.min) / _steps;
+
+  int _valueFromFraction(double f) =>
+      (widget.min + (f * _steps).round()).clamp(widget.min, widget.max);
+
+  void _handleDown(double localX, double trackWidth) {
+    setState(() => _isDragging = true);
+    _thumbAnim.forward();
+    _update(localX, trackWidth);
+  }
+
+  void _handleUpdate(double localX, double trackWidth) {
+    _update(localX, trackWidth);
+  }
+
+  void _handleEnd() {
+    _thumbAnim.reverse();
+    setState(() => _isDragging = false);
+  }
+
+  void _update(double localX, double trackWidth) {
+    final raw = (localX / trackWidth).clamp(0.0, 1.0);
+    var newVal = _valueFromFraction(raw);
+    if (newVal < 1) newVal = 1;
+    final snapped = _fractionFor(newVal);
+    setState(() => _animatedFraction = snapped);
+    if (newVal != widget.value) {
+      widget.onChanged(newVal);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Slider track
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const horizontalPadding = 8.0;
+              final trackWidth = constraints.maxWidth - horizontalPadding * 2;
+
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onHorizontalDragStart: (d) => _handleDown(
+                    d.localPosition.dx - horizontalPadding,
+                    trackWidth,
+                  ),
+                  onHorizontalDragUpdate: (d) => _handleUpdate(
+                    d.localPosition.dx - horizontalPadding,
+                    trackWidth,
+                  ),
+                  onHorizontalDragEnd: (_) => _handleEnd(),
+                  onTapDown: (d) {
+                    _handleDown(
+                      d.localPosition.dx - horizontalPadding,
+                      trackWidth,
+                    );
+                    Future.microtask(() => _handleEnd());
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                      vertical: 14,
+                    ),
+                    child: AnimatedBuilder(
+                      animation: _thumbAnim,
+                      builder: (context, _) {
+                        return CustomPaint(
+                          size: Size(trackWidth, 20),
+                          painter: _SliderTrackPainter(
+                            fraction: _animatedFraction,
+                            steps: _steps,
+                            thumbScale: 1.0 + _thumbAnim.value * 0.35,
+                            isDragging: _isDragging,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          '${widget.value} reels',
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SliderTrackPainter extends CustomPainter {
+  final double fraction; // 0..1
+  final int steps;
+  final double thumbScale;
+  final bool isDragging;
+
+  _SliderTrackPainter({
+    required this.fraction,
+    required this.steps,
+    required this.thumbScale,
+    required this.isDragging,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cy = size.height / 2;
+    const trackHeight = 4.0;
+    const thumbRadius = 8.0;
+    final trackR = Radius.circular(trackHeight / 2);
+
+    // Inactive track
+    final inactivePaint = Paint()..color = AppColors.surface3;
+    canvas.drawRRect(
+      RRect.fromLTRBR(
+        0,
+        cy - trackHeight / 2,
+        size.width,
+        cy + trackHeight / 2,
+        trackR,
+      ),
+      inactivePaint,
+    );
+
+    // Active track
+    final thumbX = fraction * size.width;
+    final activePaint = Paint()..color = AppColors.neonGreen;
+    canvas.drawRRect(
+      RRect.fromLTRBR(
+        0,
+        cy - trackHeight / 2,
+        thumbX,
+        cy + trackHeight / 2,
+        trackR,
+      ),
+      activePaint,
+    );
+
+    // Step dots
+    //for (int i = 0; i <= steps; i++) {
+    //  final dx = (i / steps) * size.width;
+    //  final isActive = dx <= thumbX + 1;
+    //  final dotPaint = Paint()
+    //    ..color = isActive
+    //        ? AppColors.neonGreen.withValues(alpha: 0.0) // hide dots on active portion
+    //        : AppColors.surface3.withValues(alpha: 0.6);
+    //  if (!isActive) {
+    //    canvas.drawCircle(Offset(dx, cy), 3.0, dotPaint);
+    //  }
+    //}
+
+    // Thumb glow when dragging
+    if (isDragging) {
+      final glowPaint = Paint()
+        ..color = AppColors.neonGreen.withValues(alpha: 0.18);
+      canvas.drawCircle(
+        Offset(thumbX, cy),
+        thumbRadius * thumbScale + 8,
+        glowPaint,
+      );
+    }
+
+    // Thumb
+    final r = thumbRadius * thumbScale;
+    // Shadow
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.35)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawCircle(Offset(thumbX, cy + 1), r, shadowPaint);
+    // Fill
+    final thumbPaint = Paint()..color = AppColors.textPrimary;
+    canvas.drawCircle(Offset(thumbX, cy), r, thumbPaint);
+    // Inner dot
+    final innerPaint = Paint()..color = AppColors.neonGreen;
+    canvas.drawCircle(Offset(thumbX, cy), r * 0.35, innerPaint);
+  }
+
+  @override
+  bool shouldRepaint(_SliderTrackPainter old) =>
+      fraction != old.fraction ||
+      thumbScale != old.thumbScale ||
+      isDragging != old.isDragging;
 }

@@ -122,7 +122,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -132,19 +135,22 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
                           -12,
                           0,
                         ), // Aligns the icon visually with the text below
-                        child: IconButton(
-                          icon: SvgPicture.asset(
-                            'assets/icons/arrow.svg',
-                            height: 15,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.textPrimary,
-                              BlendMode.srcIn,
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: IconButton(
+                            icon: SvgPicture.asset(
+                              'assets/icons/arrow.svg',
+                              height: 15,
+                              colorFilter: const ColorFilter.mode(
+                                AppColors.textPrimary,
+                                BlendMode.srcIn,
+                              ),
                             ),
+                            onPressed: () {
+                              ref.read(selectedSeriesProvider.notifier).state =
+                                  null;
+                            },
                           ),
-                          onPressed: () {
-                            ref.read(selectedSeriesProvider.notifier).state =
-                                null;
-                          },
                         ),
                       ),
                     Padding(

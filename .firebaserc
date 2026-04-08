@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "pdftoreelauth": "pdf-to-reel-auth"
+  },
+  "targets": {
+    "pdf-to-reel-auth": {
+      "hosting": {
+        "landing": [
+          "pdftoreel-landing"
+        ],
+        "app": [
+          "pdftoreel-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

@@ -3,7 +3,7 @@ import 'models/reel_models.dart';
 
 // UI State (Local)
 final isGenerateModeProvider = StateProvider<bool>((ref) => true);
-final reelCountProvider = StateProvider<double>((ref) => 4.0);
+final reelCountProvider = StateProvider<double>((ref) => 1.0);
 
 // Auth State
 final loginEmailProvider = StateProvider<String>((ref) => '');

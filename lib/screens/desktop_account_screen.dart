@@ -41,8 +41,11 @@ class DesktopAccountScreen extends ConsumerWidget {
                           currentUser!.photoURL!,
                           fit: BoxFit.cover,
                         )
-                      : const Icon(Icons.person,
-                          color: AppColors.textSecondary, size: 36),
+                      : const Icon(
+                          Icons.person,
+                          color: AppColors.textSecondary,
+                          size: 36,
+                        ),
                 ),
                 const SizedBox(width: 20),
                 Column(
@@ -95,8 +98,8 @@ class DesktopAccountScreen extends ConsumerWidget {
               ],
             ),
             loading: () => const Center(child: AppLoadingIndicator()),
-            error: (err, _) => Text('Error: $err',
-                style: const TextStyle(color: Colors.red)),
+            error: (err, _) =>
+                Text('Error: $err', style: const TextStyle(color: Colors.red)),
           ),
 
           const SizedBox(height: 32),
@@ -113,8 +116,16 @@ class DesktopAccountScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-
+          const Text(
+            'Coming soon...',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           // Pricing cards
+          /*
           LayoutBuilder(
             builder: (context, constraints) {
               final cardWidth = constraints.maxWidth > 700
@@ -130,10 +141,7 @@ class DesktopAccountScreen extends ConsumerWidget {
                     child: const _PricingCard(
                       title: 'PDF to Reel Pro',
                       price: '10\$ / month',
-                      features: [
-                        '250 credits per month',
-                        'Fastest generation',
-                      ],
+                      features: ['250 credits per month', 'Fastest generation'],
                     ),
                   ),
                   SizedBox(
@@ -141,16 +149,14 @@ class DesktopAccountScreen extends ConsumerWidget {
                     child: const _PricingCard(
                       title: 'PDF to Reel ULTRA',
                       price: '25\$ / month',
-                      features: [
-                        '250 credits per month',
-                        'Fastest generation',
-                      ],
+                      features: ['250 credits per month', 'Fastest generation'],
                     ),
                   ),
                 ],
               );
             },
           ),
+          */
         ],
       ),
     );
@@ -221,8 +227,10 @@ class _PricingCardState extends State<_PricingCard> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('•  ',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+          const Text(
+            '•  ',
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+          ),
           Expanded(
             child: Text(
               text,

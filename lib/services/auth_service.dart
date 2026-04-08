@@ -15,7 +15,7 @@ class AuthService {
       // TODO: Replace 'YOUR_WEB_CLIENT_ID' with your actual Web Client ID
       // Found at: Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs
       return GoogleSignIn(
-        clientId: '1029610083460-h3f0opfdigg4gilp0jl2mqccknqp029f.apps.googleusercontent.com',
+        clientId: '600901568590-02obsepkpr3arebog7te0djt4opm1r28.apps.googleusercontent.com',
         scopes: ['email', 'profile'],
       );
     } else {

@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../models/reel_models.dart';
 import '../utils/platform_helper.dart';
@@ -52,7 +54,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     super.dispose();
   }
 
-  bool get _isDesktop => PlatformHelper.isDesktop;
+  bool _isDesktop = false;
+
+  bool _computeIsDesktop(BuildContext context) {
+    return PlatformHelper.isDesktop || PlatformHelper.isWebDesktop(context);
+  }
 
   void _toggleControls() {
     setState(() {
@@ -116,6 +122,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       return;
     }
 
+    if (kIsWeb) {
+      // On web, open the URL directly — the browser handles the download.
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+      return;
+    }
+
     setState(() {
       _isDownloading = true;
       _downloadProgress = 0.0;
@@ -172,6 +187,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       return;
     }
 
+    if (kIsWeb) {
+      // On web, copy the link to clipboard.
+      await Clipboard.setData(ClipboardData(text: url));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Link copied to clipboard')),
+        );
+      }
+      return;
+    }
+
     final title = widget.reel.title ?? 'Video Reel';
     await Share.share(
       '$title\n\n$url',
@@ -179,220 +205,236 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isInitialized = _controller.value.isInitialized;
-    final isPlaying = _controller.value.isPlaying;
-
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: KeyboardListener(
-        focusNode: _keyboardFocusNode,
-        autofocus: true,
-        onKeyEvent: _isDesktop ? (event) {
-          if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.escape) {
-              Navigator.pop(context);
-            } else if (event.logicalKey == LogicalKeyboardKey.space) {
-              _togglePlayPause();
-            }
-          }
-        } : null,
-        child: MouseRegion(
-        onHover: _isDesktop ? (_) => _onMouseMove() : null,
-        cursor: SystemMouseCursors.basic,
-        child: GestureDetector(
-        // On desktop: click toggles play/pause. On mobile: click toggles controls.
-        onTap: _isDesktop ? _togglePlayPause : _toggleControls,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (isInitialized)
-              Center(
-                child: AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller),
-                ),
-              )
-            else
-              const Center(child: AppLoadingIndicator()),
-            AnimatedOpacity(
-              opacity: _showControls ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 250),
+  Widget _buildPlayerStack(bool isInitialized, bool isPlaying) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (isInitialized)
+          Center(
+            child: AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
               child: IgnorePointer(
-                ignoring: !_showControls,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.black54, Colors.transparent, Colors.black87],
-                      stops: [0.0, 0.4, 0.9],
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      if (isInitialized)
-                        Center(
-                          child: IconButton(
-                            icon: Icon(
-                              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 60,
-                            ),
-                            onPressed: _togglePlayPause,
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.black26,
-                              shape: const CircleBorder(
-                                side: BorderSide(color: Colors.white, width: 2),
-                              ),
-                              padding: const EdgeInsets.all(12),
-                            ),
-                          ),
+                child: VideoPlayer(_controller),
+              ),
+            ),
+          )
+        else
+          const Center(child: AppLoadingIndicator()),
+        AnimatedOpacity(
+          opacity: _showControls ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 250),
+          child: IgnorePointer(
+            ignoring: !_showControls,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black54, Colors.transparent, Colors.black87],
+                  stops: [0.0, 0.4, 0.9],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  if (isInitialized)
+                    Center(
+                      child: IconButton(
+                        icon: Icon(
+                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 60,
                         ),
-                      SafeArea(
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 8.0,
+                        onPressed: _togglePlayPause,
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black26,
+                          shape: const CircleBorder(
+                            side: BorderSide(color: Colors.white, width: 2),
+                          ),
+                          padding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.close,
+                                  color: Colors.white, size: 30),
+                              onPressed: () => Navigator.pop(context),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Row(
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.close,
-                                      color: Colors.white, size: 30),
-                                  onPressed: () => Navigator.pop(context),
+                                  icon: Icon(
+                                      kIsWeb ? Icons.link : Icons.share,
+                                      color: Colors.white, size: 28),
+                                  onPressed: _shareVideo,
                                 ),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.share,
-                                          color: Colors.white, size: 28),
-                                      onPressed: _shareVideo,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: _isDownloading
-                                          ? SizedBox(
-                                              width: 34,
-                                              height: 30,
-                                              child: CircularProgressIndicator(
-                                                value: _downloadProgress,
-                                                strokeWidth: 2,
-                                                color: AppColors.neonGreen,
-                                                backgroundColor: Colors.white24,
-                                                year2023: false,
-                                              ),
-                                            )
-                                          : const Icon(Icons.download,
-                                              color: Colors.white, size: 30),
-                                      onPressed:
-                                          _isDownloading ? null : _downloadVideo,
-                                    ),
-                                  ],
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: _isDownloading
+                                      ? SizedBox(
+                                          width: 34,
+                                          height: 30,
+                                          child: CircularProgressIndicator(
+                                            value: _downloadProgress,
+                                            strokeWidth: 2,
+                                            color: AppColors.neonGreen,
+                                            backgroundColor: Colors.white24,
+                                          ),
+                                        )
+                                      : const Icon(Icons.download,
+                                          color: Colors.white, size: 30),
+                                  onPressed:
+                                      _isDownloading ? null : _downloadVideo,
                                 ),
                               ],
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isInitialized)
+                    SafeArea(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: 20.0,
+                            left: 16,
+                            right: 16,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: AppColors.neonGreen,
+                                  inactiveTrackColor: Colors.white38,
+                                  thumbColor: AppColors.neonGreen,
+                                  trackHeight: 2.0,
+                                  thumbShape:
+                                      const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6.0,
+                                  ),
+                                  overlayShape:
+                                      const RoundSliderOverlayShape(
+                                    overlayRadius: 14.0,
+                                  ),
+                                ),
+                                child: Slider(
+                                  value: _controller.value.position
+                                      .inMilliseconds
+                                      .toDouble()
+                                      .clamp(
+                                    0.0,
+                                    _controller.value.duration
+                                        .inMilliseconds
+                                        .toDouble(),
+                                  ),
+                                  max: _controller.value.duration
+                                              .inMilliseconds >
+                                          0
+                                      ? _controller.value.duration
+                                          .inMilliseconds.toDouble()
+                                      : 1.0,
+                                  onChanged: (val) async {
+                                    await _controller.seekTo(
+                                      Duration(milliseconds: val.round()),
+                                    );
+                                  },
+                                  onChangeStart: (_) =>
+                                      _controlsTimer?.cancel(),
+                                  onChangeEnd: (_) => _startControlsTimer(),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _formatDuration(
+                                          _controller.value.position),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Text(
+                                      _formatDuration(
+                                          _controller.value.duration),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      if (isInitialized)
-                        SafeArea(
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 20.0,
-                                left: 16,
-                                right: 16,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SliderTheme(
-                                    data: SliderTheme.of(context).copyWith(
-                                      activeTrackColor: AppColors.neonGreen,
-                                      inactiveTrackColor: Colors.white38,
-                                      thumbColor: AppColors.neonGreen,
-                                      trackHeight: 2.0,
-                                      thumbShape:
-                                          const RoundSliderThumbShape(
-                                        enabledThumbRadius: 6.0,
-                                      ),
-                                      overlayShape:
-                                          const RoundSliderOverlayShape(
-                                        overlayRadius: 14.0,
-                                      ),
-                                    ),
-                                    child: Slider(
-                                      value: _controller.value.position
-                                          .inMilliseconds
-                                          .toDouble()
-                                          .clamp(
-                                        0.0,
-                                        _controller.value.duration
-                                            .inMilliseconds
-                                            .toDouble(),
-                                      ),
-                                      max: _controller.value.duration
-                                                  .inMilliseconds >
-                                              0
-                                          ? _controller.value.duration
-                                              .inMilliseconds.toDouble()
-                                          : 1.0,
-                                      onChanged: (val) async {
-                                        await _controller.seekTo(
-                                          Duration(milliseconds: val.round()),
-                                        );
-                                      },
-                                      onChangeStart: (_) =>
-                                          _controlsTimer?.cancel(),
-                                      onChangeEnd: (_) => _startControlsTimer(),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          _formatDuration(
-                                              _controller.value.position),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        Text(
-                                          _formatDuration(
-                                              _controller.value.duration),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                    ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
-      ),
-      ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _isDesktop = _computeIsDesktop(context);
+    final isInitialized = _controller.value.isInitialized;
+    final isPlaying = _controller.value.isPlaying;
+    final playerStack = _buildPlayerStack(isInitialized, isPlaying);
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _isDesktop ? () {
+          _togglePlayPause();
+          if (!_showControls) {
+            setState(() => _showControls = true);
+          }
+          _startControlsTimer();
+        } : _toggleControls,
+        child: _isDesktop
+          ? KeyboardListener(
+              focusNode: _keyboardFocusNode,
+              autofocus: true,
+              onKeyEvent: (event) {
+                if (event is KeyDownEvent) {
+                  if (event.logicalKey == LogicalKeyboardKey.escape) {
+                    Navigator.pop(context);
+                  } else if (event.logicalKey == LogicalKeyboardKey.space) {
+                    _togglePlayPause();
+                  }
+                }
+              },
+              child: MouseRegion(
+                onHover: (_) => _onMouseMove(),
+                cursor: _showControls ? SystemMouseCursors.basic : SystemMouseCursors.none,
+                child: playerStack,
+              ),
+            )
+          : playerStack,
       ),
     );
   }

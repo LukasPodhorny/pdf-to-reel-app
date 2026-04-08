@@ -60,13 +60,13 @@ class CustomSlider extends ConsumerWidget {
                 overlayShape: SliderComponentShape.noOverlay,
               ),
               child: Slider(
-                value: value,
+                value: value.clamp(1.0, 7.0),
                 min: 0,
                 max: 7,
-                divisions: 10,
+                divisions: 7,
                 onChanged: (val) {
-                  final finalVal = val < 1.0 ? 1.0 : val;
-                  ref.read(reelCountProvider.notifier).state = finalVal;
+                  if (val < 1.0) return;
+                  ref.read(reelCountProvider.notifier).state = val;
                 },
               ),
             ),
@@ -125,7 +125,10 @@ class CustomGapTrackShape extends SliderTrackShape with BaseSliderTrackShape {
     final double spacing = 0.0;
 
     // --- DRAW LEFT SIDE (Active) ---
-    final activeRight = thumbCenter.dx - spacing;
+    // Always fill at least one step so the minimum (1 reel) looks filled.
+    final double oneStep = trackRect.width / 7;
+    final activeRight = (thumbCenter.dx - spacing)
+        .clamp(trackRect.left + oneStep, trackRect.right);
     if (activeRight > trackRect.left) {
       final activeRect = Rect.fromLTRB(
         trackRect.left,

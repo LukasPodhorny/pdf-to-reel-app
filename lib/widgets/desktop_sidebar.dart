@@ -5,6 +5,7 @@ import '../constants.dart';
 import '../ui_providers.dart';
 import '../services/auth_service.dart';
 import '../services/user_service.dart';
+import '../safe_network_image.dart';
 
 /// Desktop sidebar matching the Figma design:
 /// - Logo + credits at top
@@ -66,7 +67,7 @@ class DesktopSidebar extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 3),
+                      const SizedBox(width: 5),
                       SvgPicture.asset(
                         'assets/icons/credit.svg',
                         width: 10,
@@ -110,14 +111,26 @@ class DesktopSidebar extends ConsumerWidget {
           const Spacer(),
 
           // Account
-          _SidebarNavItem(
-            svgAsset: 'assets/icons/account_icon.svg',
-            label: 'account',
-            isSelected: activeTab == DesktopTab.account,
-            onTap: () {
-              ref.read(desktopTabProvider.notifier).state = DesktopTab.account;
-            },
-          ),
+          Builder(builder: (context) {
+            final photoUrl = ref.watch(authServiceProvider).currentUser?.photoURL;
+            return _SidebarNavItem(
+              svgAsset: 'assets/icons/account_icon.svg',
+              label: 'account',
+              isSelected: activeTab == DesktopTab.account,
+              onTap: () {
+                ref.read(desktopTabProvider.notifier).state = DesktopTab.account;
+              },
+              iconOverride: photoUrl != null
+                  ? Container(
+                      width: 22,
+                      height: 22,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: const BoxDecoration(shape: BoxShape.circle),
+                      child: SafeNetworkImage(photoUrl, fit: BoxFit.cover),
+                    )
+                  : null,
+            );
+          }),
           const SizedBox(height: 4),
 
           // Log out
@@ -182,12 +195,14 @@ class _SidebarNavItem extends StatefulWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final Widget? iconOverride;
 
   const _SidebarNavItem({
     required this.svgAsset,
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.iconOverride,
   });
 
   @override
@@ -228,7 +243,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
           ),
           child: Row(
             children: [
-              SvgPicture.asset(
+              widget.iconOverride ?? SvgPicture.asset(
                 widget.svgAsset,
                 width: 22,
                 height: 22,

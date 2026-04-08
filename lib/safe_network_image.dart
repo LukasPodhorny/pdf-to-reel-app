@@ -28,8 +28,10 @@ class SafeNetworkImage extends StatelessWidget {
       return Image.network(
         url,
         fit: fit,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) {
+            return child;
+          }
           return const SizedBox.expand(child: ImageLoadingShimmer());
         },
         errorBuilder: (context, error, stackTrace) {

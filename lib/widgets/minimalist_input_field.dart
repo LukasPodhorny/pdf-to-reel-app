@@ -20,7 +20,6 @@ class MinimalistInputField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: isPassword,
-      obscuringCharacter: '●',
       keyboardType: keyboardType,
       style: const TextStyle(
         color: AppColors.textPrimary,
@@ -35,7 +34,7 @@ class MinimalistInputField extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         filled: true,
-        fillColor: AppColors.surface1, // Slightly lighter dark background
+        fillColor: AppColors.surface2,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
@@ -47,7 +46,7 @@ class MinimalistInputField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.textSecondary),
-        )
+        ),
       ),
     );
   }

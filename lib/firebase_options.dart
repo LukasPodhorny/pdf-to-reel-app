@@ -45,7 +45,7 @@ class DefaultFirebaseOptions {
     appId: '1:600901568590:web:5953aaf6b9822bb87fdb1f',
     messagingSenderId: '600901568590',
     projectId: 'pdf-to-reel-auth',
-    authDomain: 'pdf-to-reel-auth.firebaseapp.com',
+    authDomain: 'app.pdftoreel.com',
     storageBucket: 'pdf-to-reel-auth.firebasestorage.app',
     measurementId: 'G-509LLRG5G4',
   );
@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '600901568590',
     projectId: 'pdf-to-reel-auth',
     storageBucket: 'pdf-to-reel-auth.firebasestorage.app',
-    iosClientId: '600901568590-aosmp83ia5vhnedff0pu56adkcv36km5.apps.googleusercontent.com',
+    iosClientId:
+        '600901568590-aosmp83ia5vhnedff0pu56adkcv36km5.apps.googleusercontent.com',
     iosBundleId: 'com.example.pdftoreel',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '600901568590',
     projectId: 'pdf-to-reel-auth',
     storageBucket: 'pdf-to-reel-auth.firebasestorage.app',
-    iosClientId: '600901568590-aosmp83ia5vhnedff0pu56adkcv36km5.apps.googleusercontent.com',
+    iosClientId:
+        '600901568590-aosmp83ia5vhnedff0pu56adkcv36km5.apps.googleusercontent.com',
     iosBundleId: 'com.example.pdftoreel',
   );
 
@@ -83,9 +85,8 @@ class DefaultFirebaseOptions {
     appId: '1:600901568590:web:5953aaf6b9822bb87fdb1f',
     messagingSenderId: '600901568590',
     projectId: 'pdf-to-reel-auth',
-    authDomain: 'pdf-to-reel-auth.firebaseapp.com',
+    authDomain: 'app.pdftoreel.com',
     storageBucket: 'pdf-to-reel-auth.firebasestorage.app',
     measurementId: 'G-509LLRG5G4',
   );
-
 }
