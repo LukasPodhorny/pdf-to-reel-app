@@ -3,65 +3,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants.dart';
 import '../ui_providers.dart';
 import '../widgets/desktop_sidebar.dart';
-import '../widgets/top_bar.dart';
-import 'video_generator_screen.dart';
+import 'desktop_generate_screen.dart';
+import 'desktop_account_screen.dart';
 import 'videos_screen.dart';
 
-/// Desktop home screen with sidebar navigation and full-width content area
-class DesktopHomeScreen extends ConsumerStatefulWidget {
+/// Desktop home screen with sidebar navigation and content area
+class DesktopHomeScreen extends ConsumerWidget {
   const DesktopHomeScreen({super.key});
 
   @override
-  ConsumerState<DesktopHomeScreen> createState() => _DesktopHomeScreenState();
-}
-
-class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
-  @override
-  Widget build(BuildContext context) {
-    final isGenerateMode = ref.watch(isGenerateModeProvider);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isCompact = screenWidth < 1100;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeTab = ref.watch(desktopTabProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Row(
         children: [
-          // Fixed sidebar
-          DesktopSidebar(
-            onLogout: () {
-              // Navigation is handled by StreamBuilder in main.dart
-            },
-          ),
-          // Main content area
+          DesktopSidebar(onLogout: () {}),
           Expanded(
-            child: Column(
-              children: [
-                // Top bar spanning full width
-                Container(
-                  height: 64,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isCompact ? 16 : 32,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: AppColors.background,
-                    border: Border(
-                      bottom: BorderSide(color: AppColors.surface2, width: 1),
-                    ),
-                  ),
-                  child: const TopBar(),
-                ),
-                // Content area - directly render the screens without wrapper
-                Expanded(
-                  child: IndexedStack(
-                    index: isGenerateMode ? 0 : 1,
-                    children: const [VideoGeneratorScreen(), VideosScreen()],
-                  ),
-                ),
-              ],
-            ),
+            child: _buildContent(activeTab),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildContent(DesktopTab activeTab) {
+    switch (activeTab) {
+      case DesktopTab.generate:
+        return const DesktopGenerateScreen();
+      case DesktopTab.videos:
+        return const VideosScreen();
+      case DesktopTab.account:
+        return const DesktopAccountScreen();
+    }
   }
 }

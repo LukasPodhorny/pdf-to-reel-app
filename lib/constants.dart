@@ -24,6 +24,9 @@ class AppColors {
   // Shimmer colors
   static const Color shimmerBase = Color(0xFF424242); // Darker grey
   static const Color shimmerHighlight = Color(0xFF616161); // Lighter grey
+
+  // Desktop-specific
+  static const Color freeTierPurple = Color(0xFFBB86FC);
 }
 
 class AppTheme {

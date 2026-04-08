@@ -38,7 +38,31 @@
 </head>
 
 <body>
+  <script>
+    // Use the HTML renderer so that Image.network, video_player, and
+    // CachedNetworkImage all go through native browser elements and
+    // avoid CanvasKit CORS restrictions.
+    window.flutterWebRenderer = "html";
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
+<script>
+  window.addEventListener('load', function (ev) {
+    _flutter.loader.loadEntrypoint({
+      serviceWorker: {
+        serviceWorkerVersion: serviceWorkerVersion,
+      },
+      onEntrypointLoaded: function (engineInitializer) {
+        engineInitializer.initializeEngine({
+          // THIS IS THE KEY FIX
+          renderer: "html"
+        }).then(function (appRunner) {
+          appRunner.runApp();
+        });
+      }
+    });
+  });
+</script>
 
 </html>

@@ -66,6 +66,14 @@ class VideoService {
     return response.data['key']; // Use the R2 key for the generation request
   }
 
+  Future<String> uploadFileBytes(List<int> bytes, String fileName) async {
+    FormData formData = FormData.fromMap({
+      "file": MultipartFile.fromBytes(bytes, filename: fileName),
+    });
+    final response = await _dio.post('/api/upload/', data: formData);
+    return response.data['key'];
+  }
+
   Future<List<VideoTemplate>> listTemplates() async {
     final response = await _dio.get('/api/public/video-templates'); 
     return (response.data as List).map((t) => VideoTemplate.fromJson(t)).toList();

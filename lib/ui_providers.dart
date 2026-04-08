@@ -19,3 +19,7 @@ final uploadedFileKeysProvider = StateProvider<List<String>>((ref) => []);
 
 // App Data State
 final selectedSeriesProvider = StateProvider<VideoSeries?>((ref) => null);
+
+// Desktop Navigation
+enum DesktopTab { generate, videos, account }
+final desktopTabProvider = StateProvider<DesktopTab>((ref) => DesktopTab.generate);
