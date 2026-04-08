@@ -1,11 +1,11 @@
 {
-    "name": "pdftoreel",
-    "short_name": "pdftoreel",
+    "name": "PDF to Reel",
+    "short_name": "PDF to Reel",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#212121",
+    "theme_color": "#212121",
+    "description": "PDF to Reel - Convert your PDFs into engaging video reels.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
