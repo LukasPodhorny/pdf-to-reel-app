@@ -11,6 +11,7 @@ import 'services/auth_service.dart';
 import 'ui_providers.dart';
 import 'firebase_options.dart';
 import 'widgets/responsive_layout.dart';
+import 'widgets/splash_loading_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,7 @@ class MyApp extends ConsumerWidget {
         builder: (context, snapshot) {
           // If Firebase is still calculating the auth state, show a splash screen
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: Center(child: AppLoadingIndicator()));
+            return const SplashLoadingScreen();
           }
 
           final user = snapshot.data;
