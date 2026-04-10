@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../models/reel_models.dart';
 import '../utils/platform_helper.dart';
+import '../utils/web_fullscreen.dart' as web_fullscreen;
 
 class VideoPlayerScreen extends StatefulWidget {
   final Reel reel;
@@ -51,6 +52,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _controlsTimer?.cancel();
     _keyboardFocusNode.dispose();
     _controller.dispose();
+    if (kIsWeb && web_fullscreen.isFullscreen()) {
+      web_fullscreen.toggleFullscreen();
+    }
     super.dispose();
   }
 
@@ -372,13 +376,39 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                         fontSize: 12,
                                       ),
                                     ),
-                                    Text(
-                                      _formatDuration(
-                                          _controller.value.duration),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          _formatDuration(
+                                              _controller.value.duration),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        if (kIsWeb) ...[
+                                          const SizedBox(width: 8),
+                                          SizedBox(
+                                            width: 28,
+                                            height: 28,
+                                            child: IconButton(
+                                              padding: EdgeInsets.zero,
+                                              icon: Icon(
+                                                web_fullscreen.isFullscreen()
+                                                    ? Icons.fullscreen_exit
+                                                    : Icons.fullscreen,
+                                                color: Colors.white,
+                                                size: 22,
+                                              ),
+                                              onPressed: () {
+                                                web_fullscreen.toggleFullscreen();
+                                                setState(() {});
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),

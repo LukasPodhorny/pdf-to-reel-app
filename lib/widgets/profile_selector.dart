@@ -98,8 +98,10 @@ class _ProfileSelectorState extends ConsumerState<ProfileSelector> {
                             height: 62,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color:
-                                  AppColors.background, // PNG background color
+                              image: DecorationImage(
+                                image: AssetImage('assets/images/minecraft_bg.jpg'),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: Stack(

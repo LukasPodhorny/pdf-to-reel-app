@@ -205,8 +205,9 @@ class _DesktopActionButtonState extends State<_DesktopActionButton> {
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
+    // Subtle fade effect: darken the color by 10% on hover
     final bgColor = _isHovered && !isDisabled
-        ? AppColors.surface2
+        ? Color.lerp(widget.backgroundColor, Colors.black, 0.1)
         : widget.backgroundColor;
 
     return MouseRegion(

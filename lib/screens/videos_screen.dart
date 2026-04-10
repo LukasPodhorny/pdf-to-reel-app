@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdftoreel/screens/video_player_screen.dart';
 import '../constants.dart';
 import '../ui_providers.dart';
+import '../utils/platform_helper.dart';
 import '../models/reel_models.dart';
 import '../widgets/video_card.dart';
 import '../widgets/generating_thumbnail.dart';
@@ -422,7 +423,11 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
                   fontWeight: FontWeight.w500,
                   borderColor: AppColors.textSecondary,
                   onPressed: () {
-                    ref.read(isGenerateModeProvider.notifier).state = true;
+                    if (PlatformHelper.isWebDesktop(context)) {
+                      ref.read(desktopTabProvider.notifier).state = DesktopTab.generate;
+                    } else {
+                      ref.read(isGenerateModeProvider.notifier).state = true;
+                    }
                   },
                 ),
               ),

@@ -45,6 +45,10 @@
             overflow-x: hidden;
         }
 
+        body.menu-open {
+            overflow: hidden;
+        }
+
         a {
             color: inherit;
             text-decoration: none;
@@ -80,7 +84,7 @@
             font-size: 1.2rem;
         }
 
-        .nav-brand svg {
+        .nav-brand img {
             width: 36px;
             height: 36px;
         }
@@ -810,19 +814,7 @@
     <nav>
         <div class="nav-inner">
             <a href="#" class="nav-brand">
-                <svg width="45" height="44" viewBox="0 0 45 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <mask id="logo-mask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="45"
-                        height="44">
-                        <path
-                            d="M20.4077 10.018C21.1858 7.99264 24.0513 7.99263 24.8294 10.018L27.4416 16.8176C27.6894 17.4626 28.2065 17.9672 28.8574 18.1992L35.6617 20.6243C37.7594 21.372 37.7594 24.3386 35.6617 25.0862L28.8574 27.5114C28.2065 27.7433 27.6894 28.248 27.4416 28.893L24.8294 35.6925C24.0513 37.7179 21.1858 37.7179 20.4077 35.6925L17.7955 28.893C17.5477 28.248 17.0306 27.7433 16.3797 27.5114L9.57539 25.0862C7.47769 24.3386 7.47769 21.372 9.5754 20.6243L16.3797 18.1992C17.0306 17.9672 17.5477 17.4626 17.7955 16.8176L20.4077 10.018Z"
-                            fill="white" />
-                        <rect x="1.18421" y="1.18421" width="42.6316" height="40.7368" rx="10.6579" stroke="white"
-                            stroke-width="2.36842" />
-                    </mask>
-                    <g mask="url(#logo-mask)">
-                        <rect width="45" height="43.1053" fill="#34CB36" />
-                    </g>
-                </svg>
+                <img src="images/green_logo.svg" alt="PDF to Reel" width="36" height="36">
                 PDF to Reel
             </a>
             <ul class="nav-links">
@@ -830,28 +822,53 @@
                 <li><a href="#features">Features</a></li>
                 <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="https://app.pdftoreel.com" class="btn btn-primary btn-small">Open App</a></li>
+                <li><a href="https://app.pdftoreel.com" class="btn btn-primary btn-small" style="color:#000">Open
+                        App</a></li>
             </ul>
-            <button class="hamburger" onclick="document.getElementById('mobile-menu').classList.add('open')"
-                aria-label="Open menu">
-                <svg width="28" height="28" viewBox="0 0 43 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button class="hamburger" id="hamburger-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+                <svg id="hamburger-icon" width="28" height="28" viewBox="0 0 43 43" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M5.375 8.958H37.625V12.542H5.375V8.958ZM5.375 19.708H28.667V23.292H5.375V19.708ZM5.375 30.458H19.708V34.042H5.375V30.458Z"
                         fill="white" />
                 </svg>
+                <svg id="close-icon" width="28" height="28" viewBox="0 0 43 43" fill="none"
+                    xmlns="http://www.w3.org/2000/svg" style="display:none">
+                    <path d="M10.75 10.75L32.25 32.25M10.75 32.25L32.25 10.75" stroke="white" stroke-width="3"
+                        stroke-linecap="round" />
+                </svg>
             </button>
+            <script>
+                function toggleMenu() {
+                    var menu = document.getElementById("mobile-menu");
+                    var hamburgerIcon = document.getElementById("hamburger-icon");
+                    var closeIcon = document.getElementById("close-icon");
+                    var isOpen = menu.classList.contains("open");
+
+                    if (isOpen) {
+                        menu.classList.remove("open");
+                        document.body.classList.remove("menu-open");
+                        hamburgerIcon.style.display = "block";
+                        closeIcon.style.display = "none";
+                    } else {
+                        menu.classList.add("open");
+                        document.body.classList.add("menu-open");
+                        hamburgerIcon.style.display = "none";
+                        closeIcon.style.display = "block";
+                    }
+                }
+            </script>
         </div>
     </nav>
 
     <!-- MOBILE MENU -->
     <div id="mobile-menu" class="mobile-menu">
-        <button class="mobile-close" onclick="this.parentElement.classList.remove('open')"
-            aria-label="Close menu">&times;</button>
-        <a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">How it works</a>
-        <a href="#features" onclick="this.parentElement.classList.remove('open')">Features</a>
-        <a href="#pricing" onclick="this.parentElement.classList.remove('open')">Pricing</a>
-        <a href="#contact" onclick="this.parentElement.classList.remove('open')">Contact</a>
-        <a href="https://app.pdftoreel.com" class="btn btn-primary">Open App</a>
+        <button class="mobile-close" onclick="toggleMenu()" aria-label="Close menu">&times;</button>
+        <a href="#how-it-works" onclick="toggleMenu()">How it works</a>
+        <a href="#features" onclick="toggleMenu()">Features</a>
+        <a href="#pricing" onclick="toggleMenu()">Pricing</a>
+        <a href="#contact" onclick="toggleMenu()">Contact</a>
+        <a href="https://app.pdftoreel.com" class="btn btn-primary" style="color:#000">Open App</a>
     </div>
 
     <!-- HERO -->
@@ -1079,7 +1096,7 @@
     <section class="cta">
         <div class="cta-box">
             <h2>Ready to create your first reel?</h2>
-            <p>Join thousands of students and creators turning their ideas into videos with AI.</p>
+            <p>Turn your ideas into engaging videos with AI.</p>
             <a href="https://app.pdftoreel.com" class="btn btn-primary">Get Started Free</a>
         </div>
     </section>
@@ -1120,7 +1137,7 @@
                 <div class="footer-col">
                     <h4>Contact</h4>
                     <ul>
-                        <li><a href="mailto:hello@pdftoreel.com">lukas.podh@gmail.com</a></li>
+                        <li><a href="mailto:lukas.podh@gmail.com">lukas.podh@gmail.com</a></li>
                     </ul>
                 </div>
             </div>

@@ -7,23 +7,7 @@ final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = _initializeGoogleSignIn();
-
-  static GoogleSignIn _initializeGoogleSignIn() {
-    if (kIsWeb) {
-      // Web: requires explicit clientId (OAuth 2.0 Web Client ID from Google Cloud Console)
-      // TODO: Replace 'YOUR_WEB_CLIENT_ID' with your actual Web Client ID
-      // Found at: Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs
-      return GoogleSignIn(
-        clientId: '600901568590-02obsepkpr3arebog7te0djt4opm1r28.apps.googleusercontent.com',
-        scopes: ['email', 'profile'],
-      );
-    } else {
-      // Mobile (iOS/Android): use default initialization
-      // The client IDs are configured in native files (google-services.json, GoogleService-Info.plist)
-      return GoogleSignIn(scopes: ['email', 'profile']);
-    }
-  }
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -86,25 +70,33 @@ class AuthService {
     }
   }
 
-  /// Sign in with Google.
-  /// On web, make sure YOUR_WEB_CLIENT_ID is set in _initializeGoogleSignIn().
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      if (kIsWeb) {
+        // On web, use Firebase Auth's signInWithPopup directly.
+        // With authDomain set to app.pdftoreel.com (same origin),
+        // there are no cross-origin popup issues.
+        final googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.addScope('profile');
+        return await _auth.signInWithPopup(googleProvider);
+      } else {
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
 
-      return await _auth.signInWithCredential(credential);
+        return await _auth.signInWithCredential(credential);
+      }
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      print("Google Sign-In Error: $e");
+      debugPrint("Google Sign-In Error: $e");
       rethrow;
     }
   }
@@ -116,7 +108,7 @@ class AuthService {
         await _googleSignIn.signOut();
       }
     } catch (e) {
-      print("Google Sign-Out Error: $e");
+      debugPrint("Google Sign-Out Error: $e");
     }
     await _auth.signOut();
   }

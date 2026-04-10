@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -39,9 +40,18 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
     if (result != null) {
       setState(() => _isUploading = true);
       try {
-        final file = File(result.files.single.path!);
+        final pickedFile = result.files.single;
         final videoService = ref.read(videoServiceProvider);
-        final key = await videoService.uploadFile(file);
+        final String key;
+        if (kIsWeb) {
+          key = await videoService.uploadFileBytes(
+            pickedFile.bytes!,
+            pickedFile.name,
+          );
+        } else {
+          final file = File(pickedFile.path!);
+          key = await videoService.uploadFile(file);
+        }
 
         ref
             .read(uploadedFileKeysProvider.notifier)
@@ -133,8 +143,10 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
       }
     });
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
       decoration: const BoxDecoration(
         color: AppColors.surface1,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
