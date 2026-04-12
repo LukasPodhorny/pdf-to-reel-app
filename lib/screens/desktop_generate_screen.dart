@@ -205,7 +205,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                                   viewportFraction: dynamicFraction,
                                   enableInfiniteScroll: true,
                                   enlargeFactor: 0.18,
-                                  clipBehavior: Clip.none,
+                                  clipBehavior: Clip.hardEdge,
                                   scrollPhysics: const BouncingScrollPhysics(),
                                   onPageChanged: (index, reason) {
                                     setState(() => _currentIndex = index);

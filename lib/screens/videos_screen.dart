@@ -294,94 +294,52 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
         }
 
         final hasMore = notifier.hasMore;
-        final itemCount = seriesList.length + (hasMore ? 1 : 0);
+        final isPhone = !PlatformHelper.isWebDesktop(context);
 
-        return GridView.builder(
+        Widget scrollView = CustomScrollView(
           key: const ValueKey('seriesGrid'),
           controller: _seriesScrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          gridDelegate: const ResponsiveGridDelegate(
-            minItemWidth: 180,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.6,
-            minColumns: 2,
-            maxColumns: 6,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            if (index >= seriesList.length) {
-              // Loading indicator at the bottom
-              return const Center(
+          // AlwaysScrollable so RefreshIndicator can trigger even when content
+          // is shorter than the viewport.
+          physics: isPhone
+              ? const AlwaysScrollableScrollPhysics()
+              : null,
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              sliver: SliverGrid(
+                gridDelegate: const ResponsiveGridDelegate(
+                  minItemWidth: 180,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.6,
+                  minColumns: 2,
+                  maxColumns: 6,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final series = seriesList[index];
+                  return _buildSeriesCell(series);
+                }, childCount: seriesList.length),
+              ),
+            ),
+            if (hasMore)
+              const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: AppLoadingIndicator(),
+                  child: Center(child: AppLoadingIndicator()),
                 ),
-              );
-            }
-
-            final series = seriesList[index];
-            final isGenerating = _isSeriesGenerating(series);
-            final isFailed = series.status == JobStatus.failed;
-            final hasThumbnail =
-                series.thumbnailUrl != null && series.thumbnailUrl!.isNotEmpty;
-
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                if (isFailed)
-                  // Failed: always show placeholder icon regardless of thumbnail
-                  VideoCardPlaceholder(
-                    title: _getSeriesCardTitle(series),
-                    subtitle: _getSeriesCardSubtitle(series),
-                    isFailed: true,
-                  )
-                else if (isGenerating && !hasThumbnail)
-                  // Generating without thumbnail: show animated gradient
-                  GeneratingThumbnailWithOverlay(
-                    title: _getSeriesCardTitle(series),
-                    subtitle: _getSeriesCardSubtitle(series),
-                    titleFontSize: 16.0,
-                  )
-                else if (isGenerating && hasThumbnail)
-                  // Generating WITH thumbnail: show thumbnail with gradient overlay animation
-                  ThumbnailWithGeneratingOverlay(
-                    thumbnailUrl: series.thumbnailUrl!,
-                    title: _getSeriesCardTitle(series),
-                    subtitle: _getSeriesCardSubtitle(series),
-                    titleFontSize: 16.0,
-                  )
-                else if (!hasThumbnail)
-                  // Done but missing thumbnail: show placeholder icon
-                  VideoCardPlaceholder(
-                    title: _getSeriesCardTitle(series),
-                    subtitle: _getSeriesCardSubtitle(series),
-                  )
-                else
-                  // Done with thumbnail: show actual thumbnail
-                  VideoCard(
-                    thumbnailUrl: series.thumbnailUrl!,
-                    title: _getSeriesCardTitle(series),
-                    subtitle: _getSeriesCardSubtitle(series),
-                  ),
-                Positioned.fill(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      highlightColor: Colors.transparent,
-                      splashColor: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        ref.read(selectedSeriesProvider.notifier).state =
-                            series;
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+              ),
+          ],
         );
+
+        if (isPhone) {
+          scrollView = RefreshIndicator(
+            onRefresh: () => ref.read(seriesListProvider.notifier).refresh(),
+            child: scrollView,
+          );
+        }
+
+        return scrollView;
       },
       loading: () => const Center(child: AppLoadingIndicator()),
       error: (err, stack) => Center(
@@ -390,6 +348,67 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
           style: const TextStyle(color: Colors.red),
         ),
       ),
+    );
+  }
+
+  Widget _buildSeriesCell(VideoSeries series) {
+    final isGenerating = _isSeriesGenerating(series);
+    final isFailed = series.status == JobStatus.failed;
+    final hasThumbnail =
+        series.thumbnailUrl != null && series.thumbnailUrl!.isNotEmpty;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (isFailed)
+          // Failed: always show placeholder icon regardless of thumbnail
+          VideoCardPlaceholder(
+            title: _getSeriesCardTitle(series),
+            subtitle: _getSeriesCardSubtitle(series),
+            isFailed: true,
+          )
+        else if (isGenerating && !hasThumbnail)
+          // Generating without thumbnail: show animated gradient
+          GeneratingThumbnailWithOverlay(
+            title: _getSeriesCardTitle(series),
+            subtitle: _getSeriesCardSubtitle(series),
+            titleFontSize: 16.0,
+          )
+        else if (isGenerating && hasThumbnail)
+          // Generating WITH thumbnail: show thumbnail with gradient overlay animation
+          ThumbnailWithGeneratingOverlay(
+            thumbnailUrl: series.thumbnailUrl!,
+            title: _getSeriesCardTitle(series),
+            subtitle: _getSeriesCardSubtitle(series),
+            titleFontSize: 16.0,
+          )
+        else if (!hasThumbnail)
+          // Done but missing thumbnail: show placeholder icon
+          VideoCardPlaceholder(
+            title: _getSeriesCardTitle(series),
+            subtitle: _getSeriesCardSubtitle(series),
+          )
+        else
+          // Done with thumbnail: show actual thumbnail
+          VideoCard(
+            thumbnailUrl: series.thumbnailUrl!,
+            title: _getSeriesCardTitle(series),
+            subtitle: _getSeriesCardSubtitle(series),
+          ),
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                ref.read(selectedSeriesProvider.notifier).state = series;
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
