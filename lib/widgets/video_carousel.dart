@@ -88,7 +88,9 @@ class _VideoCarouselState extends ConsumerState<VideoCarousel> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CarouselSlider.builder(
+                  ClipRect(
+                    clipper: _HorizontalOnlyClipper(),
+                    child: CarouselSlider.builder(
                     carouselController: _controller,
                     itemCount: templates.length,
                     options: CarouselOptions(
@@ -211,6 +213,7 @@ class _VideoCarouselState extends ConsumerState<VideoCarousel> {
                       );
                     },
                   ),
+                  ),
                   SizedBox(
                     height: 50,
                     child: ValueListenableBuilder<double>(
@@ -256,4 +259,17 @@ class _VideoCarouselState extends ConsumerState<VideoCarousel> {
           Center(child: Text("Error loading templates: $err")),
     );
   }
+}
+
+// Clips only horizontally, allowing vertical overflow (needed so the
+// enlargeCenterPage effect isn't vertically cropped, while still clipping
+// off-screen HTML <video> platform views on Chrome web).
+class _HorizontalOnlyClipper extends CustomClipper<Rect> {
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTRB(0, -10000, size.width, size.height + 10000);
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Rect> oldClipper) => false;
 }
