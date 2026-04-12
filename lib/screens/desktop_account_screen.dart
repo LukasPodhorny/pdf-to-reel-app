@@ -17,7 +17,9 @@ class DesktopAccountScreen extends ConsumerWidget {
     final userProfileAsync = ref.watch(userProfileProvider);
     final currentUser = ref.watch(authServiceProvider).currentUser;
 
-    return SingleChildScrollView(
+    return Align(
+      alignment: Alignment.topLeft,
+      child: SingleChildScrollView(
       padding: const EdgeInsets.all(40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,6 +161,7 @@ class DesktopAccountScreen extends ConsumerWidget {
           */
         ],
       ),
+    ),
     );
   }
 }

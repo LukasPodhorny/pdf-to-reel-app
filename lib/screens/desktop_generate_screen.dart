@@ -110,6 +110,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
         );
         _promptController.clear();
         ref.read(uploadedFileKeysProvider.notifier).state = [];
+        ref.read(selectedSeriesProvider.notifier).state = null;
         ref.read(desktopTabProvider.notifier).state = DesktopTab.videos;
         ref.read(isGenerateModeProvider.notifier).state = false;
         ref.invalidate(seriesListProvider);
@@ -476,41 +477,47 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
                       color: AppColors.neonGreen,
                       shape: StadiumBorder(),
                     ),
-                    child: _isGenerating
-                        ? const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.surface1,
+                    child: SizedBox(
+                      height: 19,
+                      child: _isGenerating
+                          ? const Center(
+                              child: SizedBox(
+                                width: 19,
+                                height: 19,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.surface1,
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '$totalCost',
+                                    style: const TextStyle(
+                                      color: AppColors.surface1,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  SvgPicture.asset(
+                                    'assets/icons/credit.svg',
+                                    width: 12,
+                                    height: 12,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.surface1,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$totalCost',
-                                style: const TextStyle(
-                                  color: AppColors.surface1,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              SvgPicture.asset(
-                                'assets/icons/credit.svg',
-                                width: 12,
-                                height: 12,
-                                colorFilter: const ColorFilter.mode(
-                                  AppColors.surface1,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                            ],
-                          ),
+                    ),
                   ),
                 ),
               ),
@@ -794,7 +801,7 @@ class _DesktopGenerateScreenState extends ConsumerState<DesktopGenerateScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              _costRow('template cost:', '$templateCost', showCredit: true),
+              _costRow('template cost:', '$templateCost', showCredit: false),
               const SizedBox(height: 8),
               _costRow('number of reels:', 'x $reelCount', showCredit: false),
             ],
@@ -895,11 +902,7 @@ class _UploadButtonState extends State<_UploadButton> {
           child: Center(
             child: widget.isUploading
                 ? const AppLoadingIndicator(size: 24, strokeWidth: 2)
-                : const Icon(
-                    Icons.add,
-                    color: AppColors.textPrimary,
-                    size: 24,
-                  ),
+                : const Icon(Icons.add, color: AppColors.textPrimary, size: 24),
           ),
         ),
       ),
@@ -1252,9 +1255,7 @@ class _DesktopAvatarItemState extends State<_DesktopAvatarItem> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: widget.isSelected
-                      ? Colors.white
-                      : Colors.transparent,
+                  color: widget.isSelected ? Colors.white : Colors.transparent,
                   width: widget.isSelected ? 2.5 : 1.0,
                 ),
               ),

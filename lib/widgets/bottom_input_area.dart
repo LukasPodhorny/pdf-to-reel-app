@@ -108,6 +108,7 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
         );
         _promptController.clear();
         ref.read(uploadedFileKeysProvider.notifier).state = [];
+        ref.read(selectedSeriesProvider.notifier).state = null;
         ref.read(isGenerateModeProvider.notifier).state = false;
         ref.invalidate(seriesListProvider);
       }

@@ -168,7 +168,7 @@ class Avatar {
   }
 
   String? get staticFaceUrl {
-    final face = data['static_face_url'];
+    final face = data['preview_face_url'];
     if (face is Map) return face['url'];
     return face as String?;
   }

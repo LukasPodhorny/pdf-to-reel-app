@@ -103,6 +103,7 @@ class DesktopSidebar extends ConsumerWidget {
             label: 'videos',
             isSelected: activeTab == DesktopTab.videos,
             onTap: () {
+              ref.read(selectedSeriesProvider.notifier).state = null;
               ref.read(desktopTabProvider.notifier).state = DesktopTab.videos;
               ref.read(isGenerateModeProvider.notifier).state = false;
             },

@@ -25,7 +25,7 @@ class CustomSlider extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(
-        left: 12,
+        left: 15,
         right: 25,
         top: 13.5,
         bottom: 13.5,
@@ -127,8 +127,10 @@ class CustomGapTrackShape extends SliderTrackShape with BaseSliderTrackShape {
     // --- DRAW LEFT SIDE (Active) ---
     // Always fill at least one step so the minimum (1 reel) looks filled.
     final double oneStep = trackRect.width / 7;
-    final activeRight = (thumbCenter.dx - spacing)
-        .clamp(trackRect.left + oneStep, trackRect.right);
+    final activeRight = (thumbCenter.dx - spacing).clamp(
+      trackRect.left + oneStep,
+      trackRect.right,
+    );
     if (activeRight > trackRect.left) {
       final activeRect = Rect.fromLTRB(
         trackRect.left,
