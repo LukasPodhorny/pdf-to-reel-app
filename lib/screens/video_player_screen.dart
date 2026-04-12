@@ -6,11 +6,11 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../models/reel_models.dart';
 import '../utils/platform_helper.dart';
 import '../utils/web_fullscreen.dart' as web_fullscreen;
+import '../utils/web_download.dart' as web_download;
 
 class VideoPlayerScreen extends StatefulWidget {
   final Reel reel;
@@ -126,40 +126,58 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       return;
     }
 
-    if (kIsWeb) {
-      // On web, open the URL directly — the browser handles the download.
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-      return;
-    }
-
     setState(() {
       _isDownloading = true;
       _downloadProgress = 0.0;
     });
 
+    final fileName =
+        'reel_${widget.reel.id}_${DateTime.now().millisecondsSinceEpoch}.mp4';
+
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName =
-          'reel_${widget.reel.id}_${DateTime.now().millisecondsSinceEpoch}.mp4';
-      final filePath = '${directory.path}/$fileName';
+      if (kIsWeb) {
+        // Fetch as bytes so Firefox/Chrome trigger a real file download
+        // (the <video>-served URL would otherwise just play inline).
+        final dio = Dio();
+        final response = await dio.get<List<int>>(
+          url,
+          options: Options(responseType: ResponseType.bytes),
+          onReceiveProgress: (received, total) {
+            if (total != -1 && mounted) {
+              setState(() {
+                _downloadProgress = received / total;
+              });
+            }
+          },
+        );
+        final bytes = Uint8List.fromList(response.data ?? const []);
+        web_download.downloadBytes(bytes, fileName, 'video/mp4');
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/$fileName';
 
-      final dio = Dio();
-      await dio.download(
-        url,
-        filePath,
-        onReceiveProgress: (received, total) {
-          if (total != -1 && mounted) {
-            setState(() {
-              _downloadProgress = received / total;
-            });
-          }
-        },
-      );
+        final dio = Dio();
+        await dio.download(
+          url,
+          filePath,
+          onReceiveProgress: (received, total) {
+            if (total != -1 && mounted) {
+              setState(() {
+                _downloadProgress = received / total;
+              });
+            }
+          },
+        );
 
-      if (mounted) {
+        // App docs dir is invisible to the user — hand the file to the
+        // OS share sheet so they can save it to Files/Photos/Downloads.
+        await Share.shareXFiles(
+          [XFile(filePath, mimeType: 'video/mp4', name: fileName)],
+          subject: widget.reel.title ?? 'Video Reel',
+        );
+      }
+
+      if (mounted && kIsWeb) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Video downloaded successfully!')),
         );
@@ -286,8 +304,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                 IconButton(
                                   icon: _isDownloading
                                       ? SizedBox(
-                                          width: 34,
-                                          height: 30,
+                                          width: 26,
+                                          height: 26,
                                           child: CircularProgressIndicator(
                                             value: _downloadProgress,
                                             strokeWidth: 2,

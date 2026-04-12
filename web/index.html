@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PDF to Reel">
-  <meta name="theme-color" content="#212121">
+  <meta name="theme-color" content="#141414">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -26,7 +26,7 @@
   <style>
     body {
       margin: 0;
-      background-color: #212121;
+      background-color: #141414;
       overflow: hidden;
     }
 
@@ -92,6 +92,25 @@
   </div>
 
   <script src="flutter_bootstrap.js" async></script>
+
+  <!-- Re-inject viewport-fit=cover after Flutter strips it (flutter/flutter#157858) -->
+  <script>
+    new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        m.addedNodes.forEach(function (node) {
+          if (node.nodeName === 'META' && node.name === 'viewport' &&
+            node.content && !node.content.includes('viewport-fit=cover')) {
+            node.content += ', viewport-fit=cover';
+          }
+        });
+        if (m.type === 'attributes' && m.target.nodeName === 'META' &&
+          m.target.name === 'viewport' && m.target.content &&
+          !m.target.content.includes('viewport-fit=cover')) {
+          m.target.content += ', viewport-fit=cover';
+        }
+      });
+    }).observe(document.head, { childList: true, attributes: true, subtree: true });
+  </script>
 </body>
 
 </html>

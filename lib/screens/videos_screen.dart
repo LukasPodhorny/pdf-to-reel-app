@@ -23,17 +23,27 @@ class VideosScreen extends ConsumerStatefulWidget {
 
 class _VideosScreenState extends ConsumerState<VideosScreen> {
   Timer? _pollTimer;
+  final ScrollController _seriesScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _updatePolling();
+    _seriesScrollController.addListener(_onSeriesScroll);
   }
 
   @override
   void dispose() {
     _pollTimer?.cancel();
+    _seriesScrollController.dispose();
     super.dispose();
+  }
+
+  void _onSeriesScroll() {
+    if (_seriesScrollController.position.pixels >=
+        _seriesScrollController.position.maxScrollExtent - 200) {
+      ref.read(seriesListProvider.notifier).loadMore();
+    }
   }
 
   void _updatePolling() {
@@ -75,12 +85,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
         // Store the selected series ID if viewing one
         final selectedSeriesId = ref.read(selectedSeriesProvider)?.id;
 
-        // Invalidate the provider to trigger a refresh
-        ref.invalidate(seriesListProvider);
-
-        // Schedule a post-frame callback to update selected series with new data
-        if (selectedSeriesId != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Refresh while preserving pagination
+        ref.read(seriesListProvider.notifier).refresh().then((_) {
+          // Update selected series with new data
+          if (selectedSeriesId != null) {
             final newList = ref.read(seriesListProvider);
             newList.whenData((newData) {
               final updatedSeries = newData
@@ -90,8 +98,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
                 ref.read(selectedSeriesProvider.notifier).state = updatedSeries;
               }
             });
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -277,6 +285,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
 
   Widget _buildSeriesGrid() {
     final seriesAsync = ref.watch(seriesListProvider);
+    final notifier = ref.watch(seriesListProvider.notifier);
 
     return seriesAsync.when(
       data: (seriesList) {
@@ -284,8 +293,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
           return _buildEmptyReelsState();
         }
 
+        final hasMore = notifier.hasMore;
+        final itemCount = seriesList.length + (hasMore ? 1 : 0);
+
         return GridView.builder(
           key: const ValueKey('seriesGrid'),
+          controller: _seriesScrollController,
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           gridDelegate: const ResponsiveGridDelegate(
             minItemWidth: 180,
@@ -295,8 +308,18 @@ class _VideosScreenState extends ConsumerState<VideosScreen> {
             minColumns: 2,
             maxColumns: 6,
           ),
-          itemCount: seriesList.length,
+          itemCount: itemCount,
           itemBuilder: (context, index) {
+            if (index >= seriesList.length) {
+              // Loading indicator at the bottom
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: AppLoadingIndicator(),
+                ),
+              );
+            }
+
             final series = seriesList[index];
             final isGenerating = _isSeriesGenerating(series);
             final isFailed = series.status == JobStatus.failed;

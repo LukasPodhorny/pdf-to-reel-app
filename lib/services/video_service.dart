@@ -9,10 +9,64 @@ final videoServiceProvider = Provider<VideoService>((ref) {
   return VideoService(dio);
 });
 
-final seriesListProvider = FutureProvider<List<VideoSeries>>((ref) async {
-  final videoService = ref.watch(videoServiceProvider);
-  return await videoService.listSeries();
-});
+final seriesListProvider =
+    AsyncNotifierProvider<SeriesListNotifier, List<VideoSeries>>(
+  SeriesListNotifier.new,
+);
+
+class SeriesListNotifier extends AsyncNotifier<List<VideoSeries>> {
+  static const int _pageSize = 10;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+
+  @override
+  Future<List<VideoSeries>> build() async {
+    _hasMore = true;
+    _isLoadingMore = false;
+    final videoService = ref.watch(videoServiceProvider);
+    final list = await videoService.listSeries(limit: _pageSize, offset: 0);
+    if (list.length < _pageSize) _hasMore = false;
+    return list;
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    final currentList = state.valueOrNull;
+    if (currentList == null) return;
+
+    _isLoadingMore = true;
+    try {
+      final videoService = ref.read(videoServiceProvider);
+      final newItems = await videoService.listSeries(
+        limit: _pageSize,
+        offset: currentList.length,
+      );
+      if (newItems.length < _pageSize) _hasMore = false;
+      state = AsyncData([...currentList, ...newItems]);
+    } catch (e, st) {
+      // Keep existing data, just stop loading
+      _hasMore = false;
+      state = AsyncError(e, st);
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  /// Refresh while preserving pagination — reloads all currently loaded items.
+  Future<void> refresh() async {
+    final currentLength = state.valueOrNull?.length ?? _pageSize;
+    final videoService = ref.read(videoServiceProvider);
+    final list = await videoService.listSeries(
+      limit: currentLength,
+      offset: 0,
+    );
+    _hasMore = list.length >= currentLength;
+    state = AsyncData(list);
+  }
+}
 
 final templatesListProvider = FutureProvider<List<VideoTemplate>>((ref) async {
   final videoService = ref.watch(videoServiceProvider);
@@ -29,8 +83,11 @@ class VideoService {
 
   VideoService(this._dio);
 
-  Future<List<VideoSeries>> listSeries() async {
-    final response = await _dio.get('/api/series');
+  Future<List<VideoSeries>> listSeries({int? limit, int? offset}) async {
+    final response = await _dio.get('/api/series', queryParameters: {
+      if (limit != null) 'limit': limit,
+      if (offset != null) 'offset': offset,
+    });
     return (response.data as List).map((s) => VideoSeries.fromJson(s)).toList();
   }
 
