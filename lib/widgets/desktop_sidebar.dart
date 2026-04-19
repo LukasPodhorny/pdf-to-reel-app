@@ -21,9 +21,13 @@ class DesktopSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activeTab = ref.watch(desktopTabProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Scale sidebar width with viewport so it doesn't look thin on wide
+    // 16:9 monitors. Fixed minimum keeps the nav readable on small laptops.
+    final sidebarWidth = (screenWidth * 0.14).clamp(260.0, 340.0);
 
     return Container(
-      width: 260,
+      width: sidebarWidth,
       decoration: const BoxDecoration(
         color: AppColors.surface1,
         border: Border(right: BorderSide(color: AppColors.surface3, width: 1)),

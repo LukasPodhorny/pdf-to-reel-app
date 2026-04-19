@@ -8,8 +8,9 @@ final apiClientProvider = Provider<Dio>((ref) {
   
   final dio = Dio(BaseOptions(
     baseUrl: AppConstants.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 10), // Shortened for faster feedback
-    receiveTimeout: const Duration(seconds: 10),
+    connectTimeout: const Duration(seconds: 10),
+    sendTimeout: const Duration(minutes: 5),
+    receiveTimeout: const Duration(minutes: 5),
   ));
 
   // Add logging to help diagnose connection issues on physical devices

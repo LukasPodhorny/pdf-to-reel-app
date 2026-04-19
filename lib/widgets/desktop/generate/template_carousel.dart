@@ -6,6 +6,7 @@ import '../../../constants.dart';
 import '../../../ui_providers.dart';
 import '../../../services/video_service.dart';
 import '../../carousel_video_player.dart';
+import '../../template_tag_pills.dart';
 
 /// Full-height template carousel with arrows and page indicator.
 /// Owns its CarouselSliderController and syncs the selected template
@@ -56,141 +57,189 @@ class _TemplateCarouselState extends ConsumerState<TemplateCarousel> {
                 (cardWidth + desiredGap) / constraints.maxWidth;
             dynamicFraction = dynamicFraction.clamp(0.15, 0.55);
 
+            // Chrome WASM workaround: Wrap the entire carousel in Transform + ClipRect + Opacity
+            // to force proper stacking context for HtmlElementView-based video players.
+            // This prevents video elements from rendering above overlapping panels
+            // during initialization and scrolling, which is a known Chrome WASM rendering bug.
+            // Transform.translate with zero offset forces a new compositing layer.
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   height: carouselHeight,
-                  child: Stack(
-                    clipBehavior: Clip.hardEdge,
-                    children: [
-                      Center(
-                        child: CarouselSlider.builder(
-                          carouselController: _carouselController,
-                          itemCount: templates.length,
-                          options: CarouselOptions(
-                            height: carouselHeight,
-                            enlargeCenterPage: true,
-                            viewportFraction: dynamicFraction,
-                            enableInfiniteScroll: true,
-                            enlargeFactor: 0.18,
-                            clipBehavior: Clip.none,
-                            scrollPhysics: const BouncingScrollPhysics(),
-                            onPageChanged: (index, reason) {
-                              setState(() => _currentIndex = index);
-                              ref
-                                      .read(selectedTemplateNameProvider.notifier)
-                                      .state =
-                                  templates[index].name;
-                              ref
-                                      .read(selectedTemplateProvider.notifier)
-                                      .state =
-                                  templates[index];
-                            },
-                          ),
-                          itemBuilder: (context, index, realIndex) {
-                            final template = templates[index];
-                            double diff = (_currentIndex - index)
-                                .abs()
-                                .toDouble();
-                            if (diff > templates.length / 2) {
-                              diff = templates.length - diff;
-                            }
-                            const double fade = 0.6;
-                            final fadeOpacity = (diff * fade).clamp(0.0, fade);
-
-                            return Center(
-                              child: AspectRatio(
-                                aspectRatio: 9 / 16,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: Colors.grey[900],
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      CarouselVideoPlayer(
-                                        isSelected: _currentIndex == index,
-                                        videoUrl: template.previewUrl,
-                                        thumbnailUrl: '',
-                                      ),
-                                      Positioned(
-                                        top: 11,
-                                        right: 9,
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              '${template.credits}',
-                                              style: const TextStyle(
-                                                color: AppColors.textPrimary,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 16,
-                                                shadows: [
-                                                  Shadow(
-                                                    blurRadius: 10,
-                                                    color: Color.fromARGB(
-                                                      150,
-                                                      0,
-                                                      0,
-                                                      0,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            SvgPicture.asset(
-                                              'assets/icons/credit.svg',
-                                              width: 12,
-                                              height: 12,
-                                              colorFilter:
-                                                  const ColorFilter.mode(
-                                                    AppColors.textPrimary,
-                                                    BlendMode.srcIn,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      IgnorePointer(
-                                        child: Container(
-                                          color: AppColors.background
-                                              .withValues(alpha: fadeOpacity),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                  // Additional ClipRect to ensure videos don't overflow their bounds
+                  child: ClipRect(
+                    child: Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: [
+                        // Transform.translate forces a new compositing layer
+                        // Opacity(0.9999) forces a new render layer
+                        // Combined, these fix the z-index/stacking issue in Chrome WASM
+                        Transform.translate(
+                          offset: const Offset(0, 0),
+                          child: Opacity(
+                            opacity: 0.9999,
+                            child: Center(
+                              child: CarouselSlider.builder(
+                                carouselController: _carouselController,
+                                itemCount: templates.length,
+                                options: CarouselOptions(
+                                  height: carouselHeight,
+                                  enlargeCenterPage: true,
+                                  viewportFraction: dynamicFraction,
+                                  enableInfiniteScroll: true,
+                                  enlargeFactor: 0.18,
+                                  clipBehavior: Clip.hardEdge,
+                                  scrollPhysics: const BouncingScrollPhysics(),
+                                  onPageChanged: (index, reason) {
+                                    setState(() => _currentIndex = index);
+                                    ref
+                                        .read(
+                                          selectedTemplateNameProvider.notifier,
+                                        )
+                                        .state = templates[index]
+                                        .name;
+                                    ref
+                                            .read(
+                                              selectedTemplateProvider.notifier,
+                                            )
+                                            .state =
+                                        templates[index];
+                                  },
                                 ),
+                                itemBuilder: (context, index, realIndex) {
+                                  final template = templates[index];
+                                  double diff = (_currentIndex - index)
+                                      .abs()
+                                      .toDouble();
+                                  if (diff > templates.length / 2) {
+                                    diff = templates.length - diff;
+                                  }
+                                  const double fade = 0.6;
+                                  final fadeOpacity = (diff * fade).clamp(
+                                    0.0,
+                                    fade,
+                                  );
+
+                                  return Center(
+                                    child: AspectRatio(
+                                      aspectRatio: 9 / 16,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        clipBehavior: Clip.hardEdge,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            color: Colors.grey[900],
+                                          ),
+                                          child: MouseRegion(
+                                            cursor: SystemMouseCursors.basic,
+                                            child: Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                              CarouselVideoPlayer(
+                                                isSelected:
+                                                    _currentIndex == index,
+                                                videoUrl: template.previewUrl,
+                                                thumbnailUrl: '',
+                                              ),
+                                              if (_currentIndex == index)
+                                                Positioned(
+                                                  top: 11,
+                                                  left: 11,
+                                                  right: 60,
+                                                  child: TemplateTagPills(
+                                                    template: template,
+                                                  ),
+                                                ),
+                                              Positioned(
+                                                top: 11,
+                                                right: 9,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      '${template.credits}',
+                                                      style: const TextStyle(
+                                                        color: AppColors
+                                                            .textPrimary,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: 16,
+                                                        shadows: [
+                                                          Shadow(
+                                                            blurRadius: 10,
+                                                            color:
+                                                                Color.fromARGB(
+                                                                  150,
+                                                                  0,
+                                                                  0,
+                                                                  0,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    SvgPicture.asset(
+                                                      'assets/icons/credit.svg',
+                                                      width: 12,
+                                                      height: 12,
+                                                      colorFilter:
+                                                          const ColorFilter.mode(
+                                                            AppColors
+                                                                .textPrimary,
+                                                            BlendMode.srcIn,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              IgnorePointer(
+                                                child: Container(
+                                                  color: AppColors.background
+                                                      .withValues(
+                                                        alpha: fadeOpacity,
+                                                      ),
+                                                ),
+                                              ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        left: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: _CarouselArrow(
-                            flipped: true,
-                            onTap: () => _carouselController.previousPage(),
+                            ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        right: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: _CarouselArrow(
-                            flipped: false,
-                            onTap: () => _carouselController.nextPage(),
+                        Positioned(
+                          left: 16,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: _CarouselArrow(
+                              flipped: true,
+                              onTap: () => _carouselController.previousPage(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          right: 16,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: _CarouselArrow(
+                              flipped: false,
+                              onTap: () => _carouselController.nextPage(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Padding(

@@ -119,25 +119,50 @@ class UserProfile {
   }
 }
 
+class TemplateTag {
+  final String assetType;
+  final bool defaultEnabled;
+
+  TemplateTag({
+    required this.assetType,
+    required this.defaultEnabled,
+  });
+
+  factory TemplateTag.fromJson(Map<String, dynamic> json) {
+    return TemplateTag(
+      assetType: json['asset_type'] as String,
+      defaultEnabled: json['default'] as bool? ?? true,
+    );
+  }
+}
+
 class VideoTemplate {
   final int id;
   final String name;
   final int credits;
   final String previewUrl;
+  final List<TemplateTag> tags;
 
   VideoTemplate({
     required this.id,
     required this.name,
     required this.credits,
     required this.previewUrl,
+    required this.tags,
   });
 
   factory VideoTemplate.fromJson(Map<String, dynamic> json) {
+    final rawTags = json['tags'] as List?;
     return VideoTemplate(
       id: json['id'],
       name: json['name'],
       credits: json['credits'] ?? 1,
       previewUrl: json['preview_url'] ?? '',
+      tags: rawTags == null
+          ? const []
+          : rawTags
+              .map((t) => TemplateTag.fromJson(t as Map<String, dynamic>))
+              .toList(),
     );
   }
 }

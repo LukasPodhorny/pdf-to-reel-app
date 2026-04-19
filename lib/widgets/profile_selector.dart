@@ -171,6 +171,17 @@ class _ProfileSelectorState extends ConsumerState<ProfileSelector> {
                                             )
                                             .state = {...current}
                                           ..remove(avatar.name);
+                                      } else if (current.length >=
+                                          kMaxSelectedAvatars) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'You can select up to $kMaxSelectedAvatars avatars',
+                                            ),
+                                          ),
+                                        );
                                       } else {
                                         ref
                                             .read(
@@ -377,6 +388,14 @@ class _AvatarSearchSheetState extends ConsumerState<_AvatarSearchSheet> {
                                       ref
                                           .read(selectedAvatarNamesProvider.notifier)
                                           .state = {...current}..remove(avatar.name);
+                                    } else if (current.length >= kMaxSelectedAvatars) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'You can select up to $kMaxSelectedAvatars avatars',
+                                          ),
+                                        ),
+                                      );
                                     } else {
                                       ref
                                           .read(selectedAvatarNamesProvider.notifier)

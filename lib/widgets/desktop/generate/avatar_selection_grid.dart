@@ -114,6 +114,14 @@ class _AvatarSelectionGridState extends ConsumerState<AvatarSelectionGrid> {
                                   .read(selectedAvatarNamesProvider.notifier)
                                   .state = {...current}
                                 ..remove(avatar.name);
+                            } else if (current.length >= kMaxSelectedAvatars) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'You can select up to $kMaxSelectedAvatars avatars',
+                                  ),
+                                ),
+                              );
                             } else {
                               ref
                                   .read(selectedAvatarNamesProvider.notifier)

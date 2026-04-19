@@ -34,7 +34,11 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
   Future<void> _pickAndUploadFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'txt', 'docx', 'pptx'],
+      allowedExtensions: [
+        'pdf', 'txt',
+        'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+        'odt', 'ods', 'odp', 'rtf',
+      ],
     );
 
     if (result != null) {
@@ -70,10 +74,20 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
 
   Future<void> _startGeneration() async {
     final templateName = ref.read(selectedTemplateNameProvider);
+    final template = ref.read(selectedTemplateProvider);
     final avatarNames = ref.read(selectedAvatarNamesProvider).toList();
     final prompt = _promptController.text;
     final files = ref.read(uploadedFileKeysProvider);
     final reelCount = ref.read(reelCountProvider).toInt();
+    final tagMap = ref.read(enabledTagsByTemplateProvider);
+    final List<String>? enabledTags = template == null || template.tags.isEmpty
+        ? null
+        : (tagMap[template.name] ??
+                {
+                  for (final t in template.tags)
+                    if (t.defaultEnabled) t.assetType,
+                })
+            .toList();
 
     if (templateName == null) {
       ScaffoldMessenger.of(
@@ -98,6 +112,7 @@ class _BottomInputAreaState extends ConsumerState<BottomInputArea> {
         amount: reelCount,
         inputText: prompt,
         files: files,
+        enabledTags: enabledTags,
       );
 
       if (mounted) {

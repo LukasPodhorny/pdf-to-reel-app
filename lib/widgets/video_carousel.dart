@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../ui_providers.dart';
 import '../services/video_service.dart';
 import 'carousel_video_player.dart';
+import 'template_tag_pills.dart';
 
 class VideoCarousel extends ConsumerStatefulWidget {
   const VideoCarousel({super.key});
@@ -141,7 +142,9 @@ class _VideoCarouselState extends ConsumerState<VideoCarousel> {
                                     color: Colors.grey[900],
                                   ),
                                   clipBehavior: Clip.antiAlias,
-                                  child: Stack(
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.basic,
+                                    child: Stack(
                                     fit: StackFit.expand,
                                     children: [
                                       CarouselVideoPlayer(
@@ -149,6 +152,16 @@ class _VideoCarouselState extends ConsumerState<VideoCarousel> {
                                         videoUrl: template.previewUrl,
                                         thumbnailUrl: '',
                                       ),
+                                      if (_currentIndex == index)
+                                        Positioned(
+                                          top: 9,
+                                          left: 9,
+                                          right: 50,
+                                          child: TemplateTagPills(
+                                            template: template,
+                                            scale: 0.75,
+                                          ),
+                                        ),
                                       Positioned(
                                         top: 11,
                                         right: 9,
@@ -204,6 +217,7 @@ class _VideoCarouselState extends ConsumerState<VideoCarousel> {
                                         ),
                                       ),
                                     ],
+                                  ),
                                   ),
                                 ),
                               ),

@@ -13,6 +13,11 @@ class DesktopGenerateScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Scale the config panel with viewport width so it stays visually
+    // balanced with the carousel on wide 16:9 monitors.
+    final configWidth = (screenWidth * 0.175).clamp(320.0, 440.0);
+
     return Row(
       children: [
         Expanded(
@@ -26,7 +31,7 @@ class DesktopGenerateScreen extends ConsumerWidget {
           ),
         ),
         Container(
-          width: 320,
+          width: configWidth,
           decoration: const BoxDecoration(
             border: Border(
               left: BorderSide(color: AppColors.surface3, width: 1),

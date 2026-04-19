@@ -102,6 +102,7 @@ class VideoService {
     int amount = 1,
     String? inputText,
     List<String>? files,
+    List<String>? enabledTags,
   }) async {
     final response = await _dio.post('/api/generate', data: {
       'template_name': templateName,
@@ -109,6 +110,7 @@ class VideoService {
       'amount': amount,
       'input_text': inputText,
       'files': files,
+      if (enabledTags != null) 'enabled_tags': enabledTags,
     });
     return response.data['series_id'];
   }

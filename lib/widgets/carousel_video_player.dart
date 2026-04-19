@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 import 'package:pdftoreel/widgets/image_loading_shimmer.dart';
 import '../safe_network_image.dart';
 import '../ui_providers.dart';
+import 'dart:async';
 
 class CarouselVideoPlayer extends ConsumerStatefulWidget {
   final String videoUrl;
@@ -27,6 +28,9 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
   bool _isInitialized = false;
   bool _hasError = false;
   bool _controllerCreated = false;
+  // Chrome WASM fix: Track if we've applied the initial stacking fix
+  bool _stackingFixApplied = false;
+  Timer? _stackingFixTimer;
 
   @override
   void initState() {
@@ -58,6 +62,9 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
           _isInitialized = true;
         });
         _handlePlayState();
+        // Chrome WASM workaround: Force a rebuild after initialization
+        // to ensure proper stacking context
+        _applyStackingFix();
       }
     } catch (e) {
       if (mounted) {
@@ -66,6 +73,29 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
         });
       }
     }
+  }
+
+  /// Chrome WASM-specific workaround: Force the video element to
+  /// re-establish its stacking context by triggering a rebuild
+  void _applyStackingFix() {
+    if (!mounted || _stackingFixApplied) return;
+
+    // Mark that we've applied the fix
+    setState(() {
+      _stackingFixApplied = true;
+    });
+
+    // Schedule another rebuild after a frame to ensure the
+    // HtmlElementView has been properly positioned in the DOM
+    _stackingFixTimer?.cancel();
+    _stackingFixTimer = Timer(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        // Force a rebuild to re-establish stacking context
+        setState(() {
+          _stackingFixApplied = true;
+        });
+      }
+    });
   }
 
   @override
@@ -90,6 +120,7 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
 
   @override
   void dispose() {
+    _stackingFixTimer?.cancel();
     if (_controllerCreated) {
       _controller.dispose();
     }
@@ -101,7 +132,7 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
       return SafeNetworkImage(widget.thumbnailUrl, fit: BoxFit.cover);
     }
 
-    return Stack(fit: StackFit.expand, children: const [ImageLoadingShimmer()]);
+    return const Stack(fit: StackFit.expand, children: [ImageLoadingShimmer()]);
   }
 
   @override
@@ -123,21 +154,39 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
       return _buildLoadingOrFallback();
     }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (!_isInitialized) _buildLoadingOrFallback(),
+    // Chrome WASM workaround: Use multiple techniques to force proper stacking context:
+    // 1. Transform.translate with zero offset forces a new compositing layer
+    // 2. Opacity slightly below 1.0 forces a new render layer
+    // 3. ClipRect ensures the video doesn't overflow its bounds
+    // This combination fixes the z-index/stacking issue in Chrome WASM
+    return Transform.translate(
+      offset: const Offset(0, 0), // Zero offset but forces compositing layer
+      child: Opacity(
+        opacity: 0.9999,
+        child: ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Show fallback if not initialized OR if size is invalid (common on web start)
+              if (!_isInitialized || _controller.value.size.width <= 0)
+                _buildLoadingOrFallback(),
 
-        if (_isInitialized)
-          FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: _controller.value.size.width,
-              height: _controller.value.size.height,
-              child: VideoPlayer(_controller),
-            ),
+              if (_isInitialized && _controller.value.size.width > 0)
+                RepaintBoundary(
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    clipBehavior: Clip.hardEdge,
+                    child: SizedBox(
+                      width: _controller.value.size.width,
+                      height: _controller.value.size.height,
+                      child: VideoPlayer(_controller),
+                    ),
+                  ),
+                ),
+            ],
           ),
-      ],
+        ),
+      ),
     );
   }
 }
