@@ -1,6 +1,6 @@
 # pdftoreel
 
-Turns one prompt/file into multiple short-form videos. Live at [pdftoreel.com](https://pdftoreel.com) 90 free credits currently included.
+Turns one prompt/file into multiple short-form videos. Live at [pdftoreel.com](https://pdftoreel.com) **90 free credits** currently included.
 
 ## Deployment
 
