@@ -9,6 +9,14 @@ Two Firebase Hosting targets (see `firebase.json`):
 - **`landing`** → [pdftoreel.com](https://pdftoreel.com) — static marketing page served from `landing/`.
 - **`app`** → [app.pdftoreel.com](https://app.pdftoreel.com) — the Flutter web app built from `build/web`.
 
+## Mobile app (beta)
+
+Android/iOS builds are distributed via Firebase App Distribution. Join the testers and install:
+
+- **Download:** [here](https://appdistribution.firebase.dev/i/3c23a4ce558c73cc)
+
+You'll get an email from Firebase with install instructions. On iOS you may need to register your device UDID before a build is available.
+
 ## Stack
 
 - **Flutter** (web + mobile + desktop targets configured)
