@@ -11,7 +11,8 @@ class LoginPasswordScreen extends ConsumerStatefulWidget {
   const LoginPasswordScreen({super.key});
 
   @override
-  ConsumerState<LoginPasswordScreen> createState() => _LoginPasswordScreenState();
+  ConsumerState<LoginPasswordScreen> createState() =>
+      _LoginPasswordScreenState();
 }
 
 class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
@@ -40,8 +41,10 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
     });
 
     try {
-      await ref.read(authServiceProvider).signInWithEmailAndPassword(email, password);
-      
+      await ref
+          .read(authServiceProvider)
+          .signInWithEmailAndPassword(email, password);
+
       // IMPORTANT: Clear the navigation stack on success.
       // This ensures that the Login screens are removed and the user
       // sees the HomeScreen which is being swapped in by main.dart's StreamBuilder.
@@ -70,9 +73,9 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     }
   }
