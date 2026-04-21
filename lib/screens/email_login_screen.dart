@@ -40,7 +40,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
 
     try {
       final exists = await ref.read(authServiceProvider).checkIfUserExists(email);
-      
+
       if (mounted) {
         if (exists) {
           ref.read(loginEmailProvider.notifier).state = email;
@@ -66,28 +66,29 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      title: 'Log in',
+      title: 'Welcome back',
+      subtitle: 'Enter your email to continue.',
       children: [
         MinimalistInputField(
           controller: _emailController,
           hintText: 'Email address',
           keyboardType: TextInputType.emailAddress,
+          prefixIcon: Icons.mail_outline,
         ),
         if (_errorMessage != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 10.0),
             child: Text(
               _errorMessage!,
-              style: const TextStyle(color: Colors.red, fontSize: 13),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
             ),
           ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         ActionPillButton(
           text: 'Continue',
-          backgroundColor: Colors.transparent,
-          textColor: AppColors.textPrimary,
-          fontWeight: FontWeight.w500,
-          borderColor: AppColors.textSecondary,
+          backgroundColor: AppColors.neonGreen,
+          textColor: AppColors.background,
+          fontWeight: FontWeight.w600,
           onPressed: _isLoading ? null : _onContinue,
         ),
         if (_isLoading)

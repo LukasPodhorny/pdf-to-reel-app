@@ -49,16 +49,9 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/app_icon.png"
+  image_path: "assets/icons/ic_launcher_foreground.png"
+  adaptive_icon_background: "#16A74B"  # your green hex
+  adaptive_icon_foreground: "assets/icons/ic_launcher_foreground.png"
   min_sdk_android: 21
-  web:
-    generate: true
-    image_path: "assets/icons/app_icon.png"
-    background_color: "#ffffff"
-    theme_color: "#ffffff"
-  windows:
-    generate: true
-    image_path: "assets/icons/app_icon.png"
-  macos:
-    generate: true
-    image_path: "assets/icons/app_icon.png"
+  # iOS doesn't support transparency — use a non-transparent version
+  image_path_ios: "assets/icons/ic_launcher_ios.png"

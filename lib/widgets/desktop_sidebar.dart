@@ -54,11 +54,11 @@ class DesktopSidebar extends ConsumerWidget {
                   'PDF to Reel',
                   style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w100,
                   ),
                 ),
-                const SizedBox(width: 30),
+                const SizedBox(width: 65),
                 // Credits
                 userProfileAsync.maybeWhen(
                   data: (profile) => Row(
@@ -116,26 +116,32 @@ class DesktopSidebar extends ConsumerWidget {
           const Spacer(),
 
           // Account
-          Builder(builder: (context) {
-            final photoUrl = ref.watch(authServiceProvider).currentUser?.photoURL;
-            return _SidebarNavItem(
-              svgAsset: 'assets/icons/account_icon.svg',
-              label: 'account',
-              isSelected: activeTab == DesktopTab.account,
-              onTap: () {
-                ref.read(desktopTabProvider.notifier).state = DesktopTab.account;
-              },
-              iconOverride: photoUrl != null
-                  ? Container(
-                      width: 22,
-                      height: 22,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: const BoxDecoration(shape: BoxShape.circle),
-                      child: SafeNetworkImage(photoUrl, fit: BoxFit.cover),
-                    )
-                  : null,
-            );
-          }),
+          Builder(
+            builder: (context) {
+              final photoUrl = ref
+                  .watch(authServiceProvider)
+                  .currentUser
+                  ?.photoURL;
+              return _SidebarNavItem(
+                svgAsset: 'assets/icons/account_icon.svg',
+                label: 'account',
+                isSelected: activeTab == DesktopTab.account,
+                onTap: () {
+                  ref.read(desktopTabProvider.notifier).state =
+                      DesktopTab.account;
+                },
+                iconOverride: photoUrl != null
+                    ? Container(
+                        width: 22,
+                        height: 22,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(shape: BoxShape.circle),
+                        child: SafeNetworkImage(photoUrl, fit: BoxFit.cover),
+                      )
+                    : null,
+              );
+            },
+          ),
           const SizedBox(height: 4),
 
           // Log out
@@ -247,12 +253,16 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
           ),
           child: Row(
             children: [
-              widget.iconOverride ?? SvgPicture.asset(
-                widget.svgAsset,
-                width: 22,
-                height: 22,
-                colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
-              ),
+              widget.iconOverride ??
+                  SvgPicture.asset(
+                    widget.svgAsset,
+                    width: 22,
+                    height: 22,
+                    colorFilter: ColorFilter.mode(
+                      contentColor,
+                      BlendMode.srcIn,
+                    ),
+                  ),
               const SizedBox(width: 12),
               Text(
                 widget.label,

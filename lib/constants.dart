@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  static const String apiBaseUrl = 'https://api.pdftoreel.com'; // Update this to your real URL
+  static const String apiBaseUrl =
+      'https://api.pdftoreel.com'; // Update this to your real URL
 }
 
 class AppColors {
@@ -18,7 +19,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF999999);
 
   // Accents
-  static const Color neonGreen = Color(0xFF34CB36);
+  static const Color neonGreen = Color(0xFF16A74B);
   static const Color accentPink = Color(0xFFFF4081);
 
   // Shimmer colors

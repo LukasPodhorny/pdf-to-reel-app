@@ -27,19 +27,20 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
   Widget build(BuildContext context) {
     return AuthLayout(
       title: 'Create account',
+      subtitle: 'Start turning documents into videos.',
       children: [
         MinimalistInputField(
           controller: _emailController,
           hintText: 'Email address',
           keyboardType: TextInputType.emailAddress,
+          prefixIcon: Icons.mail_outline,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         ActionPillButton(
           text: 'Continue',
-          backgroundColor: Colors.transparent,
-          textColor: AppColors.textPrimary,
-          fontWeight: FontWeight.w500,
-          borderColor: AppColors.textSecondary,
+          backgroundColor: AppColors.neonGreen,
+          textColor: AppColors.background,
+          fontWeight: FontWeight.w600,
           onPressed: () {
             ref.read(signupEmailProvider.notifier).state = _emailController.text;
             Navigator.push(

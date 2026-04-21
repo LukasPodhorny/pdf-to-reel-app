@@ -47,20 +47,12 @@ class _CreatePasswordScreenState extends ConsumerState<CreatePasswordScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // 1. Set verification flag BEFORE signup
-      // This prevents the StreamBuilder in main.dart from jumping to HomeScreen immediately
       ref.read(needsVerificationProvider.notifier).state = true;
-
-      // 2. Create the user
       await ref.read(authServiceProvider).createUserWithEmailAndPassword(email, password);
-      
-      // 3. Clear navigation stack
-      // The StreamBuilder in main.dart will now automatically show the EnterCodeScreen
       if (mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
-      // Reset verification flag on error
       ref.read(needsVerificationProvider.notifier).state = false;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -76,25 +68,27 @@ class _CreatePasswordScreenState extends ConsumerState<CreatePasswordScreen> {
   Widget build(BuildContext context) {
     return AuthLayout(
       title: 'Create password',
+      subtitle: 'Pick something at least 6 characters long.',
       children: [
         MinimalistInputField(
           controller: _passwordController,
           hintText: 'Password',
           isPassword: true,
+          prefixIcon: Icons.lock_outline,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         MinimalistInputField(
           controller: _confirmPasswordController,
           hintText: 'Confirm password',
           isPassword: true,
+          prefixIcon: Icons.lock_outline,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         ActionPillButton(
-          text: 'Continue',
-          backgroundColor: Colors.transparent,
-          textColor: AppColors.textPrimary,
-          fontWeight: FontWeight.w500,
-          borderColor: AppColors.textSecondary,
+          text: 'Create account',
+          backgroundColor: AppColors.neonGreen,
+          textColor: AppColors.background,
+          fontWeight: FontWeight.w600,
           onPressed: _isLoading ? null : () => _signUp(),
         ),
         if (_isLoading)

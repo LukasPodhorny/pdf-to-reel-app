@@ -45,9 +45,6 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
           .read(authServiceProvider)
           .signInWithEmailAndPassword(email, password);
 
-      // IMPORTANT: Clear the navigation stack on success.
-      // This ensures that the Login screens are removed and the user
-      // sees the HomeScreen which is being swapped in by main.dart's StreamBuilder.
       if (mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
@@ -82,40 +79,52 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final email = ref.watch(loginEmailProvider);
+
     return AuthLayout(
       title: 'Enter password',
+      subtitle: email.isNotEmpty ? 'Signing in as $email' : null,
       children: [
         MinimalistInputField(
           controller: _passwordController,
           hintText: 'Password',
           isPassword: true,
+          prefixIcon: Icons.lock_outline,
         ),
         if (_errorMessage != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 10.0),
             child: Text(
               _errorMessage!,
-              style: const TextStyle(color: Colors.red, fontSize: 13),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
             ),
           ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 6),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: _forgotPassword,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             child: const Text(
               'Forgot password?',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
         ActionPillButton(
           text: 'Log in',
-          backgroundColor: Colors.transparent,
-          textColor: AppColors.textPrimary,
-          fontWeight: FontWeight.w500,
-          borderColor: AppColors.textSecondary,
+          backgroundColor: AppColors.neonGreen,
+          textColor: AppColors.background,
+          fontWeight: FontWeight.w600,
           onPressed: _isLoading ? null : () => _login(),
         ),
         if (_isLoading)

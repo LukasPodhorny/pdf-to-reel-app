@@ -23,16 +23,20 @@ class ActionPillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity, // Automatically stretches to fill padded parent
-      height: 57.0, // Fixed height for uniformity
+      width: double.infinity,
+      height: 54.0,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
           elevation: 0,
           shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          disabledBackgroundColor: backgroundColor.withOpacity(0.4),
+          disabledForegroundColor: textColor.withOpacity(0.5),
+          padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(16.0),
             side: borderColor != null
                 ? BorderSide(color: borderColor!, width: 1.0)
                 : BorderSide.none,
@@ -45,7 +49,11 @@ class ActionPillButton extends StatelessWidget {
             if (icon != null) ...[icon!, const SizedBox(width: 12.0)],
             Text(
               text,
-              style: TextStyle(fontSize: 17.0, fontWeight: fontWeight),
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: fontWeight,
+                letterSpacing: 0.1,
+              ),
             ),
           ],
         ),
