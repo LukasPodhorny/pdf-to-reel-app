@@ -139,14 +139,17 @@ class _PromptInputPanelState extends ConsumerState<PromptInputPanel> {
         ? selectedTemplate.credits * reelCount
         : 0;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(48, 0, 48, 24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface1,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(48, 0, 48, 24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface1,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (uploadedKeys.isNotEmpty) ...[
@@ -265,6 +268,8 @@ class _PromptInputPanelState extends ConsumerState<PromptInputPanel> {
             ],
           ),
         ],
+          ),
+        ),
       ),
     );
   }

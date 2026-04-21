@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../constants.dart';
 import '../../../ui_providers.dart';
 import '../../../services/video_service.dart';
 import '../../carousel_video_player.dart';
 import '../../template_tag_pills.dart';
 
-/// Full-height template carousel with arrows and page indicator.
-/// Owns its CarouselSliderController and syncs the selected template
-/// into [selectedTemplateNameProvider] / [selectedTemplateProvider].
 class TemplateCarousel extends ConsumerStatefulWidget {
   const TemplateCarousel({super.key});
 
@@ -57,24 +55,15 @@ class _TemplateCarouselState extends ConsumerState<TemplateCarousel> {
                 (cardWidth + desiredGap) / constraints.maxWidth;
             dynamicFraction = dynamicFraction.clamp(0.15, 0.55);
 
-            // Chrome WASM workaround: Wrap the entire carousel in Transform + ClipRect + Opacity
-            // to force proper stacking context for HtmlElementView-based video players.
-            // This prevents video elements from rendering above overlapping panels
-            // during initialization and scrolling, which is a known Chrome WASM rendering bug.
-            // Transform.translate with zero offset forces a new compositing layer.
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   height: carouselHeight,
-                  // Additional ClipRect to ensure videos don't overflow their bounds
                   child: ClipRect(
                     child: Stack(
                       clipBehavior: Clip.hardEdge,
                       children: [
-                        // Transform.translate forces a new compositing layer
-                        // Opacity(0.9999) forces a new render layer
-                        // Combined, these fix the z-index/stacking issue in Chrome WASM
                         Transform.translate(
                           offset: const Offset(0, 0),
                           child: Opacity(
@@ -134,17 +123,43 @@ class _TemplateCarouselState extends ConsumerState<TemplateCarousel> {
                                             ),
                                             color: Colors.grey[900],
                                           ),
-                                          child: MouseRegion(
-                                            cursor: SystemMouseCursors.basic,
-                                            child: Stack(
-                                              fit: StackFit.expand,
-                                              children: [
-                                              CarouselVideoPlayer(
-                                                isSelected:
-                                                    _currentIndex == index,
-                                                videoUrl: template.previewUrl,
-                                                thumbnailUrl: '',
-                                              ),
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              if (_currentIndex == index)
+                                                CarouselVideoPlayer(
+                                                  isSelected: true,
+                                                  videoUrl: template.previewUrl,
+                                                  thumbnailUrl:
+                                                      template.thumbnailUrl ??
+                                                      '',
+                                                )
+                                              else if (template.thumbnailUrl ==
+                                                      null ||
+                                                  template
+                                                      .thumbnailUrl!
+                                                      .isEmpty)
+                                                Container(
+                                                  color: Colors.grey[900],
+                                                )
+                                              else
+                                                CachedNetworkImage(
+                                                  imageUrl:
+                                                      template.thumbnailUrl!,
+                                                  fit: BoxFit.cover,
+                                                  fadeInDuration: Duration.zero,
+                                                  fadeOutDuration: Duration.zero,
+                                                  placeholder: (context, url) =>
+                                                      Container(
+                                                        color: Colors.grey[900],
+                                                      ),
+                                                  errorWidget:
+                                                      (context, url, error) =>
+                                                          Container(
+                                                            color: Colors.black,
+                                                          ),
+                                                ),
+
                                               if (_currentIndex == index)
                                                 Positioned(
                                                   top: 11,
@@ -204,8 +219,7 @@ class _TemplateCarouselState extends ConsumerState<TemplateCarousel> {
                                                       ),
                                                 ),
                                               ),
-                                              ],
-                                            ),
+                                            ],
                                           ),
                                         ),
                                       ),

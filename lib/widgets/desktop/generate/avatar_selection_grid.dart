@@ -22,6 +22,12 @@ class _AvatarSelectionGridState extends ConsumerState<AvatarSelectionGrid> {
   String _query = '';
 
   @override
+  void initState() {
+    super.initState();
+    const SvgAssetLoader('assets/icons/checkmark.svg').loadBytes(null);
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();

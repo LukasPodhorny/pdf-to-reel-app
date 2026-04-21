@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pdftoreel/widgets/image_loading_shimmer.dart';
-import '../safe_network_image.dart';
 import '../ui_providers.dart';
 import 'dart:async';
 
@@ -129,7 +129,15 @@ class _CarouselVideoPlayerState extends ConsumerState<CarouselVideoPlayer> {
 
   Widget _buildLoadingOrFallback() {
     if (widget.thumbnailUrl.trim().isNotEmpty) {
-      return SafeNetworkImage(widget.thumbnailUrl, fit: BoxFit.cover);
+      return CachedNetworkImage(
+        imageUrl: widget.thumbnailUrl,
+        fit: BoxFit.cover,
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
+        placeholder: (context, url) => const SizedBox.expand(),
+        errorWidget: (context, url, error) =>
+            Container(color: Colors.black),
+      );
     }
 
     return const Stack(fit: StackFit.expand, children: [ImageLoadingShimmer()]);

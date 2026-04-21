@@ -141,6 +141,7 @@ class VideoTemplate {
   final String name;
   final int credits;
   final String previewUrl;
+  final String? thumbnailUrl;
   final List<TemplateTag> tags;
 
   VideoTemplate({
@@ -149,6 +150,7 @@ class VideoTemplate {
     required this.credits,
     required this.previewUrl,
     required this.tags,
+    this.thumbnailUrl,
   });
 
   factory VideoTemplate.fromJson(Map<String, dynamic> json) {
@@ -158,6 +160,7 @@ class VideoTemplate {
       name: json['name'],
       credits: json['credits'] ?? 1,
       previewUrl: json['preview_url'] ?? '',
+      thumbnailUrl: json['thumbnail_url'] as String?,
       tags: rawTags == null
           ? const []
           : rawTags
