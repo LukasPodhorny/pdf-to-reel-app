@@ -51,7 +51,7 @@ class _DesktopLoginScreenState extends ConsumerState<DesktopLoginScreen> {
                     vertical: 48,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.surface1.withOpacity(0.6),
+                    color: AppColors.surface1,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: AppColors.surface3.withOpacity(0.4),
