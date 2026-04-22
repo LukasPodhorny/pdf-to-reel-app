@@ -40,7 +40,7 @@ class AuthLayout extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
+              const SizedBox(height: 72),
               Center(
                 child: SvgPicture.asset(
                   'assets/icons/logo.svg',
@@ -55,6 +55,7 @@ class AuthLayout extends StatelessWidget {
               const SizedBox(height: 40),
               Text(
                 title,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 32,
@@ -67,6 +68,7 @@ class AuthLayout extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   subtitle!,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
@@ -74,7 +76,7 @@ class AuthLayout extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
               ...children,
               const SizedBox(height: 24),
             ],

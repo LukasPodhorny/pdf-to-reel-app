@@ -27,7 +27,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
   Widget build(BuildContext context) {
     return AuthLayout(
       title: 'Create account',
-      subtitle: 'Start turning documents into videos.',
+      subtitle: 'Enter your email to continue.',
       children: [
         MinimalistInputField(
           controller: _emailController,

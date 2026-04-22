@@ -108,7 +108,7 @@ class _Brand extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         const Text(
-          'Turn your documents into\nshort-form videos with AI.',
+          'Turn just one prompt/file into\nengaging videos with AI.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textSecondary,
@@ -156,10 +156,7 @@ class _AuthActions extends StatelessWidget {
           backgroundColor: AppColors.surface2,
           textColor: AppColors.textPrimary,
           fontWeight: FontWeight.w500,
-          icon: SvgPicture.asset(
-            'assets/icons/mail.svg',
-            width: 20,
-          ),
+          icon: SvgPicture.asset('assets/icons/mail.svg', width: 20),
           onPressed: onEmailSignup,
         ),
         const SizedBox(height: 20),
@@ -191,7 +188,10 @@ class _OrDivider extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Container(height: 1, color: AppColors.surface3.withOpacity(0.5)),
+          child: Container(
+            height: 1,
+            color: AppColors.surface3.withOpacity(0.5),
+          ),
         ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 14),
@@ -205,7 +205,10 @@ class _OrDivider extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Container(height: 1, color: AppColors.surface3.withOpacity(0.5)),
+          child: Container(
+            height: 1,
+            color: AppColors.surface3.withOpacity(0.5),
+          ),
         ),
       ],
     );
@@ -228,4 +231,3 @@ class _TermsFootnote extends StatelessWidget {
     );
   }
 }
-

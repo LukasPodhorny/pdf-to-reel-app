@@ -86,7 +86,7 @@ class _DesktopLoginScreenState extends ConsumerState<DesktopLoginScreen> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Turn your documents into engaging videos with AI.',
+                        'Turn one prompt into engaging videos with AI.',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 15,
