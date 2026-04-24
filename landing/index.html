@@ -54,6 +54,27 @@
             text-decoration: none;
         }
 
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s ease-out, transform 0.7s cubic-bezier(.2, .8, .2, 1);
+            will-change: opacity, transform;
+        }
+
+        .reveal.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
         /* ── NAV ── */
         nav {
             position: fixed;
@@ -68,9 +89,9 @@
         }
 
         .nav-inner {
-            max-width: var(--max-width);
+            max-width: calc(var(--max-width) + 48px);
             margin: 0 auto;
-            padding: 16px 0px;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -116,7 +137,7 @@
             font-size: 0.95rem;
             border: none;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
             font-family: inherit;
         }
 
@@ -127,7 +148,6 @@
 
         .btn-primary:hover {
             background: var(--green-dim);
-            transform: translateY(-1px);
             box-shadow: 0 8px 30px rgba(52, 203, 54, 0.3);
         }
 
@@ -189,14 +209,51 @@
             font-size: 1.2rem;
             color: var(--text-muted);
             max-width: 480px;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
             line-height: 1.7;
+        }
+
+        .hero-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+            max-width: 480px;
+        }
+
+        .hero-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: rgba(52, 203, 54, 0.08);
+            color: var(--green);
+            border: 1px solid rgba(52, 203, 54, 0.18);
+        }
+
+        .hero-chip::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
         }
 
         .hero-buttons {
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
+        }
+
+        .hero-buttons-mobile {
+            display: none;
+        }
+
+        .prompt-mock-mobile {
+            display: none;
         }
 
         .hero-visual {
@@ -222,10 +279,12 @@
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
         }
 
-        .phone-frame img {
+        .phone-frame img,
+        .phone-frame video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         .floating-card {
@@ -340,126 +399,597 @@
             margin-bottom: 12px;
         }
 
-        /* ── HOW IT WORKS ── */
-        .steps-grid {
+        /* ── REEL CAROUSEL ── */
+        .reels {
+            padding: 100px 0;
+            overflow: hidden;
+        }
+
+        .reels .section-header {
+            padding: 0 24px;
+        }
+
+        .reels-wrapper {
+            position: relative;
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .reels-track-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 16px 24px 24px;
+        }
+
+        .reels-track-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .reels-track {
+            display: flex;
+            gap: 24px;
+            width: max-content;
+            margin: 0 auto;
+        }
+
+        .reel-card {
+            flex: 0 0 260px;
+            scroll-snap-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .reel-frame {
+            width: 100%;
+            aspect-ratio: 9/16;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #000;
+            border: 1px solid var(--dark-border);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .reel-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .reel-caption {
+            margin-top: 18px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .reel-caption-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--green);
+            background: rgba(52, 203, 54, 0.1);
+            padding: 4px 10px;
+            border-radius: 50px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .reel-caption-text {
+            font-size: 0.95rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .reel-sound-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.55);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .reel-sound-btn:hover {
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        .reel-sound-btn .icon-unmuted {
+            display: none;
+        }
+
+        .reel-sound-btn[data-muted="false"] .icon-muted {
+            display: none;
+        }
+
+        .reel-sound-btn[data-muted="false"] .icon-unmuted {
+            display: block;
+        }
+
+        .reel-sound-btn[data-muted="false"] {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+        }
+
+        .reels-arrow-side {
+            display: none;
+            position: absolute;
+            top: 50%;
+            transform: translate(0, calc(-50% - 35px));
+            z-index: 5;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(20, 20, 20, 0.85);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--dark-border);
+            color: var(--text);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .reels-arrow-side.prev {
+            left: 12px;
+        }
+
+        .reels-arrow-side.next {
+            right: 12px;
+        }
+
+        @media (hover: hover) {
+            .reels-arrow-side:hover {
+                background: var(--green);
+                color: #000;
+                border-color: var(--green);
+            }
+        }
+
+        @media (max-width: 1180px) {
+            .reels-arrow-side {
+                display: flex;
+            }
+        }
+
+        /* ── SPOTLIGHT (shared) ── */
+        .spotlight-alt {
+            background: var(--dark-card);
+        }
+
+        .spotlight-split {
             max-width: var(--max-width);
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 32px;
+            grid-template-columns: 1fr 1fr;
+            gap: 72px;
+            align-items: center;
         }
 
-        .step-card {
+        .spotlight-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .spotlight-phone {
+            width: 280px;
+            aspect-ratio: 9/16;
+            border-radius: 32px;
+            border: 2px solid var(--dark-border);
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .spotlight-phone video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        /* ── SPOTLIGHT 1 (prompt) ── */
+        .prompt-mock {
             background: var(--dark-card);
             border: 1px solid var(--dark-border);
-            border-radius: var(--radius);
-            padding: 40px 32px;
-            transition: border-color 0.3s, transform 0.3s;
+            border-radius: 16px;
+            padding: 22px;
+            max-width: 440px;
+            margin-top: 28px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
         }
 
-        .step-card:hover {
-            border-color: var(--green);
-            transform: translateY(-4px);
+        .prompt-mock-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
         }
 
-        .step-number {
-            width: 48px;
-            height: 48px;
+        .prompt-mock-input {
+            background: var(--dark);
+            border: 1px solid var(--dark-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 14px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt-caret {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background: var(--green);
+            margin-left: 2px;
+            animation: blink 1s steps(2) infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .prompt-mock-btn {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 18px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: default;
+        }
+
+        /* ── SPOTLIGHT 2 (docs) ── */
+        .doc-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .doc-tab {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
             border-radius: 12px;
-            background: rgba(52, 203, 54, 0.1);
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            color: var(--text);
+            transition: border-color 0.2s, background 0.2s;
+            width: 100%;
+        }
+
+        .doc-tab:hover {
+            border-color: rgba(52, 203, 54, 0.35);
+        }
+
+        .doc-tab.active {
+            border-color: var(--green);
+            background: rgba(52, 203, 54, 0.06);
+        }
+
+        .doc-tab-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(52, 203, 54, 0.12);
             color: var(--green);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.65rem;
             font-weight: 800;
-            font-size: 1.2rem;
-            margin-bottom: 24px;
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
         }
 
-        .step-card h3 {
-            font-size: 1.25rem;
+        .doc-tab-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-tab-name {
+            font-size: 0.92rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doc-tab-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .doc-tab-arrow {
+            color: var(--text-muted);
+            transition: color 0.2s, transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .doc-tab.active .doc-tab-arrow {
+            color: var(--green);
+            transform: translateX(2px);
+        }
+
+        .doc-preview-panel {
+            background: #f5f5f0;
+            border-radius: 14px;
+            padding: 24px;
+            min-height: 200px;
+            border: 1px solid var(--dark-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-preview {
+            display: none;
+        }
+
+        .doc-preview.active {
+            display: block;
+        }
+
+        .doc-preview-title {
+            font-size: 0.8rem;
             font-weight: 700;
+            color: #333;
+            margin-bottom: 14px;
+            letter-spacing: 0.02em;
+        }
+
+        .doc-line {
+            height: 7px;
+            background: #cfcfc8;
+            border-radius: 3px;
+            margin-bottom: 9px;
+        }
+
+        .doc-line.heading {
+            background: #666;
+            height: 10px;
+            margin-top: 16px;
             margin-bottom: 12px;
         }
 
-        .step-card p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.65;
+        .docs-reel-caption {
+            margin-top: 20px;
+            text-align: center;
         }
 
-        /* ── FEATURES ── */
-        .features-grid {
+        .docs-reel-caption .reel-caption-tag {
+            margin-bottom: 6px;
+        }
+
+        .docs-reel-caption-text {
+            display: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .docs-reel-caption-text.active {
+            display: block;
+        }
+
+        /* ── CAPABILITIES ── */
+        .capabilities-grid {
             max-width: var(--max-width);
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
+            gap: 20px;
         }
 
-        .feature-card {
+        .capability-card {
             background: var(--dark-card);
             border: 1px solid var(--dark-border);
             border-radius: var(--radius);
-            padding: 40px 36px;
-            transition: border-color 0.3s;
+            padding: 36px 32px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .feature-card:hover {
-            border-color: var(--dark-border);
-            border-color: #333;
-        }
-
-        .feature-icon {
-            font-size: 2rem;
+        .capability-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(52, 203, 54, 0.2), rgba(52, 203, 54, 0.05));
+            border: 1px solid rgba(52, 203, 54, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--green);
             margin-bottom: 20px;
         }
 
-        .feature-card h3 {
-            font-size: 1.2rem;
+        .capability-card h3 {
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 10px;
+            letter-spacing: -0.01em;
         }
 
-        .feature-card p {
+        .capability-card p {
             color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.65;
+            font-size: 0.98rem;
+            line-height: 1.7;
         }
 
-        /* ── USE CASES ── */
-        .usecases {
+        /* ── PREVIEW / DASHBOARD DEMO ── */
+        .demo {
             background: var(--dark-card);
         }
 
-        .usecases-grid {
+        .demo-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .demo-video-wrap {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #000;
+            border: 1px solid var(--dark-border);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+            aspect-ratio: 16/9;
+            max-width: 960px;
+        }
+
+        .demo-video-wrap video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .demo-video-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 50px;
+            letter-spacing: 0.04em;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .demo-video-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ── AUDIENCE ── */
+        .audience-grid {
             max-width: var(--max-width);
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 32px;
+            gap: 24px;
         }
 
-        .usecase-card {
-            text-align: center;
-            padding: 32px 24px;
+        .audience-card {
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius);
+            padding: 36px 32px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
         }
 
-        .usecase-emoji {
-            font-size: 3rem;
-            margin-bottom: 20px;
+        .audience-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(52, 203, 54, 0.2), rgba(52, 203, 54, 0.05));
+            border: 1px solid rgba(52, 203, 54, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--green);
+            margin-bottom: 22px;
         }
 
-        .usecase-card h3 {
-            font-size: 1.1rem;
+        .audience-card h3 {
+            font-size: 1.25rem;
             font-weight: 700;
             margin-bottom: 10px;
         }
 
-        .usecase-card p {
+        .audience-card p {
+            font-size: 0.95rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
-            line-height: 1.6;
+            line-height: 1.65;
+            margin-bottom: 20px;
+        }
+
+        .audience-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .audience-tag {
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 5px 11px;
+            border-radius: 50px;
+            background: rgba(52, 203, 54, 0.08);
+            color: var(--green);
+            border: 1px solid rgba(52, 203, 54, 0.15);
         }
 
         /* ── PRICING ── */
@@ -498,61 +1028,6 @@
             border-radius: 50px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-        }
-
-        .pricing-card h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .pricing-card .price {
-            font-size: 2.8rem;
-            font-weight: 900;
-            margin-bottom: 4px;
-        }
-
-        .pricing-card .price span {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-muted);
-        }
-
-        .pricing-card .price-note {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 28px;
-        }
-
-        .pricing-features {
-            list-style: none;
-            margin-bottom: 32px;
-            flex-grow: 1;
-        }
-
-        .pricing-features li {
-            padding: 8px 0;
-            font-size: 0.92rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .pricing-features li::before {
-            content: '';
-            width: 18px;
-            height: 18px;
-            background: rgba(52, 203, 54, 0.15);
-            border-radius: 50%;
-            flex-shrink: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='10' height='8' viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4L3.5 6.5L9 1' stroke='%2334CB36' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-
-        .pricing-card .btn {
-            width: 100%;
         }
 
         /* ── CTA ── */
@@ -713,13 +1188,54 @@
                 text-align: center;
             }
 
-            .hero-text p {
+            .hero-text p,
+            .hero-chips {
                 margin-left: auto;
                 margin-right: auto;
             }
 
+            .hero-chips {
+                justify-content: center;
+            }
+
             .hero-buttons {
                 justify-content: center;
+            }
+
+            .hero-buttons-desktop {
+                display: none;
+            }
+
+            .hero-buttons-mobile {
+                display: flex;
+            }
+
+            .prompt-mock-desktop {
+                display: none;
+            }
+
+            .prompt-mock-mobile {
+                display: block;
+            }
+
+            .spotlight-docs .spotlight-visual {
+                order: 1;
+            }
+
+            .spotlight-docs .spotlight-text {
+                order: 2;
+            }
+
+            .spotlight-docs .docs-reel-caption {
+                display: none;
+            }
+
+            .spotlight-docs .doc-preview-panel {
+                display: none;
+            }
+
+            .prompt-mock-mobile {
+                width: 100%;
             }
 
             .hero-text h1 {
@@ -730,13 +1246,12 @@
                 font-size: 2.2rem;
             }
 
-            .steps-grid,
-            .usecases-grid {
+            .audience-grid {
                 grid-template-columns: 1fr;
                 max-width: 480px;
             }
 
-            .features-grid {
+            .capabilities-grid {
                 grid-template-columns: 1fr;
                 max-width: 520px;
             }
@@ -744,6 +1259,34 @@
             .pricing-grid {
                 grid-template-columns: 1fr;
                 max-width: 400px;
+            }
+
+            .reel-card {
+                flex: 0 0 230px;
+            }
+
+            .spotlight-split {
+                grid-template-columns: 1fr;
+                gap: 48px;
+                text-align: center;
+            }
+
+            .spotlight-text p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .prompt-mock {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .spotlight-docs .spotlight-split {
+                text-align: left;
+            }
+
+            .spotlight-docs .spotlight-text {
+                text-align: center;
             }
         }
 
@@ -758,43 +1301,133 @@
 
             .hero {
                 min-height: auto;
-                padding: 120px 24px 60px;
+                padding: 108px 20px 56px;
+            }
+
+            .hero-inner {
+                gap: 48px;
             }
 
             .hero-text h1 {
                 font-size: 2.4rem;
+                margin-bottom: 20px;
             }
 
             .hero-text p {
-                font-size: 1.05rem;
+                font-size: 1.02rem;
+                margin-bottom: 26px;
+            }
+
+            .hero-chips {
+                margin-bottom: 26px;
             }
 
             .hero-mockup {
-                width: 220px;
+                width: 210px;
+            }
+
+            .floating-card {
+                font-size: 0.75rem;
+                padding: 9px 12px;
+                gap: 8px;
+                max-width: 200px;
+            }
+
+            .floating-card span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .floating-card.card-pdf {
-                right: -40px;
-                font-size: 0.8rem;
-                padding: 10px 14px;
+                top: 8%;
+                right: -26px;
             }
 
             .floating-card.card-prompt {
-                right: -50px;
-                font-size: 0.8rem;
-                padding: 10px 14px;
+                bottom: 12%;
+                right: -36px;
+            }
+
+            .card-icon {
+                width: 28px;
+                height: 28px;
+            }
+
+            .card-icon.pdf {
+                font-size: 0.6rem;
+            }
+
+            .plus-icon {
+                right: -18px;
+                width: 26px;
+                height: 26px;
+                font-size: 0.95rem;
             }
 
             section {
                 padding: 64px 20px;
             }
 
+            .section-header {
+                margin-bottom: 48px;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .section-header p {
+                font-size: 1rem;
+            }
+
+            .reels {
+                padding: 64px 0;
+            }
+
+            .reels .section-header {
+                padding: 0 20px;
+            }
+
+            .reels-track-container {
+                padding: 16px 20px 24px;
+            }
+
+            .reel-card {
+                flex: 0 0 220px;
+            }
+
+            .reels-arrow-side.prev {
+                left: 6px;
+            }
+
+            .reels-arrow-side.next {
+                right: 6px;
+            }
+
+            .spotlight-phone {
+                width: 230px;
+            }
+
+            .capability-card,
+            .audience-card {
+                padding: 30px 26px;
+            }
+
+            .demo-video-wrap {
+                border-radius: 14px;
+            }
+
             .cta-box {
-                padding: 40px 24px;
+                padding: 44px 26px;
             }
 
             .cta-box h2 {
                 font-size: 1.8rem;
+            }
+
+            .cta-box p {
+                font-size: 1rem;
             }
 
             .footer-inner {
@@ -804,6 +1437,255 @@
 
             .footer-links {
                 gap: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-inner {
+                padding: 14px 18px;
+            }
+
+            .nav-brand {
+                font-size: 1.05rem;
+                gap: 10px;
+            }
+
+            .nav-brand img {
+                width: 30px;
+                height: 30px;
+            }
+
+            .hero {
+                padding: 96px 18px 44px;
+            }
+
+            .hero-inner {
+                gap: 40px;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+                margin-bottom: 18px;
+            }
+
+            .hero-text p {
+                font-size: 0.95rem;
+                margin-bottom: 22px;
+            }
+
+            .hero-chips {
+                gap: 6px;
+                margin-bottom: 24px;
+            }
+
+            .hero-chip {
+                font-size: 0.72rem;
+                padding: 5px 10px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+                gap: 12px;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                padding: 13px 24px;
+            }
+
+            .hero-mockup {
+                width: 195px;
+            }
+
+            .floating-card {
+                font-size: 0.68rem;
+                padding: 7px 10px;
+                gap: 7px;
+                max-width: 160px;
+            }
+
+            .floating-card.card-pdf {
+                top: 6%;
+                right: -14px;
+            }
+
+            .floating-card.card-prompt {
+                bottom: 10%;
+                right: -20px;
+            }
+
+            .card-icon {
+                width: 24px;
+                height: 24px;
+            }
+
+            .card-icon.pdf {
+                font-size: 0.55rem;
+            }
+
+            .plus-icon {
+                right: -12px;
+                width: 22px;
+                height: 22px;
+                font-size: 0.85rem;
+            }
+
+            section {
+                padding: 52px 18px;
+            }
+
+            .section-header {
+                margin-bottom: 40px;
+            }
+
+            .section-header h2 {
+                font-size: 1.7rem;
+            }
+
+            .section-header p {
+                font-size: 0.95rem;
+            }
+
+            .section-label {
+                font-size: 0.72rem;
+            }
+
+            .reels {
+                padding: 52px 0;
+            }
+
+            .reels .section-header {
+                padding: 0 18px;
+            }
+
+            .reels-track-container {
+                padding: 14px 18px 22px;
+            }
+
+            .reel-card {
+                flex: 0 0 200px;
+            }
+
+            .reel-caption {
+                margin-top: 14px;
+            }
+
+            .reel-caption-text {
+                font-size: 0.88rem;
+            }
+
+            .spotlight-phone {
+                width: 210px;
+            }
+
+            .prompt-mock {
+                padding: 18px;
+                margin-top: 24px;
+            }
+
+            .prompt-mock-input {
+                font-size: 0.92rem;
+                padding: 12px 14px;
+                min-height: 46px;
+            }
+
+            .doc-tab {
+                padding: 12px 14px;
+                gap: 12px;
+            }
+
+            .doc-tab-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .doc-tab-name {
+                font-size: 0.88rem;
+            }
+
+            .doc-tab-meta {
+                font-size: 0.72rem;
+            }
+
+            .doc-preview-panel {
+                padding: 20px;
+                min-height: 170px;
+            }
+
+            .capabilities-grid,
+            .audience-grid {
+                gap: 16px;
+            }
+
+            .capability-card,
+            .audience-card {
+                padding: 26px 22px;
+            }
+
+            .capability-card h3,
+            .audience-card h3 {
+                font-size: 1.15rem;
+            }
+
+            .capability-card p,
+            .audience-card p {
+                font-size: 0.92rem;
+            }
+
+            .capability-icon {
+                width: 48px;
+                height: 48px;
+                margin-bottom: 16px;
+            }
+
+            .audience-icon {
+                width: 52px;
+                height: 52px;
+                margin-bottom: 18px;
+            }
+
+            .cta-box {
+                padding: 36px 22px;
+                border-radius: 20px;
+            }
+
+            .cta-box h2 {
+                font-size: 1.55rem;
+            }
+
+            .cta-box p {
+                font-size: 0.95rem;
+                margin-bottom: 24px;
+            }
+
+            .cta-box .btn {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            footer {
+                padding: 40px 18px;
+            }
+
+            .footer-inner {
+                gap: 28px;
+            }
+
+            .footer-links {
+                gap: 32px;
+                flex-wrap: wrap;
+            }
+
+            .mobile-menu a {
+                font-size: 1.3rem;
+            }
+
+            .mobile-menu {
+                gap: 28px;
             }
         }
     </style>
@@ -818,10 +1700,10 @@
                 PDF to Reel
             </a>
             <ul class="nav-links">
-                <li><a href="#how-it-works">How it works</a></li>
+                <li><a href="#reels">Examples</a></li>
                 <li><a href="#features">Features</a></li>
+                <li><a href="#preview">Preview</a></li>
                 <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#contact">Contact</a></li>
                 <li><a href="https://app.pdftoreel.com" class="btn btn-primary btn-small" style="color:#000">Open
                         App</a></li>
             </ul>
@@ -838,36 +1720,16 @@
                         stroke-linecap="round" />
                 </svg>
             </button>
-            <script>
-                function toggleMenu() {
-                    var menu = document.getElementById("mobile-menu");
-                    var hamburgerIcon = document.getElementById("hamburger-icon");
-                    var closeIcon = document.getElementById("close-icon");
-                    var isOpen = menu.classList.contains("open");
-
-                    if (isOpen) {
-                        menu.classList.remove("open");
-                        document.body.classList.remove("menu-open");
-                        hamburgerIcon.style.display = "block";
-                        closeIcon.style.display = "none";
-                    } else {
-                        menu.classList.add("open");
-                        document.body.classList.add("menu-open");
-                        hamburgerIcon.style.display = "none";
-                        closeIcon.style.display = "block";
-                    }
-                }
-            </script>
         </div>
     </nav>
 
     <!-- MOBILE MENU -->
     <div id="mobile-menu" class="mobile-menu">
         <button class="mobile-close" onclick="toggleMenu()" aria-label="Close menu">&times;</button>
-        <a href="#how-it-works" onclick="toggleMenu()">How it works</a>
+        <a href="#reels" onclick="toggleMenu()">Examples</a>
         <a href="#features" onclick="toggleMenu()">Features</a>
+        <a href="#preview" onclick="toggleMenu()">Preview</a>
         <a href="#pricing" onclick="toggleMenu()">Pricing</a>
-        <a href="#contact" onclick="toggleMenu()">Contact</a>
         <a href="https://app.pdftoreel.com" class="btn btn-primary" style="color:#000">Open App</a>
     </div>
 
@@ -876,12 +1738,17 @@
         <div class="hero-inner">
             <div class="hero-text">
                 <h1>Make your own reels using <span class="highlight">AI</span></h1>
-                <p>Turn your study notes into Reels, or just describe the topic you want to explain. From just one
-                    prompt to
-                    polished video in seconds.</p>
-                <div class="hero-buttons">
+                <p>One prompt is enough — or drop in your study materials. AI writes the script, picks the visuals,
+                    and renders a short-form reel in minutes.</p>
+                <div class="hero-chips">
+                    <span class="hero-chip">Engaging</span>
+                    <span class="hero-chip">Advanced</span>
+                    <span class="hero-chip">Simple</span>
+                    <span class="hero-chip">Informative</span>
+                </div>
+                <div class="hero-buttons hero-buttons-desktop">
                     <a href="https://app.pdftoreel.com" class="btn btn-primary">Get Started Free</a>
-                    <a href="#how-it-works" class="btn btn-outline">See how it works</a>
+                    <a href="#reels" class="btn btn-outline">See examples</a>
                 </div>
             </div>
             <div class="hero-visual">
@@ -907,120 +1774,431 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section id="how-it-works">
-        <div class="section-header">
-            <span class="section-label">How it works</span>
-            <h2>Three steps to your reel</h2>
-            <p>No editing skills required. Our AI handles the heavy lifting so you can focus on what matters.</p>
-        </div>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-number">1</div>
-                <h3>Upload or describe</h3>
-                <p>Drop in a PDF, paste your study notes, or simply type a topic you want to turn into a video.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-number">2</div>
-                <h3>AI generates your reel</h3>
-                <p>Our AI reads your content, writes a script, picks visuals, and assembles a short-form video reel
-                    automatically.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-number">3</div>
-                <h3>Download &amp; share</h3>
-                <p>View your reel directly in the app, or download/share to your favorite platform.</p>
+            <div class="hero-buttons hero-buttons-mobile">
+                <a href="https://app.pdftoreel.com" class="btn btn-primary">Get Started Free</a>
+                <a href="#reels" class="btn btn-outline">See examples</a>
             </div>
         </div>
     </section>
 
-    <!-- FEATURES -->
-    <section id="features">
-        <div class="section-header">
-            <span class="section-label">Features</span>
-            <h2>Everything you need to create</h2>
-            <p>Powerful tools that make video creation accessible to everyone.</p>
+    <!-- REEL SHOWCASE CAROUSEL -->
+    <section id="reels" class="reels">
+        <div class="section-header reveal">
+            <span class="section-label">Real reels</span>
+            <h2>See what AI makes from a single prompt</h2>
+            <p>Every reel below was generated automatically — from one prompt or an uploaded document. Tap the sound
+                icon to unmute.</p>
         </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.5"
+        <div class="reels-wrapper">
+            <button class="reels-arrow-side prev" onclick="scrollReels(-1)" aria-label="Previous reel">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <button class="reels-arrow-side next" onclick="scrollReels(1)" aria-label="Next reel">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            <div class="reels-track-container" id="reels-track-container">
+                <div class="reels-track">
+                    <div class="reel-card">
+                        <div class="reel-frame">
+                            <video src="example_videos/example_reel.mp4" autoplay muted loop playsinline
+                                disablepictureinpicture disableremoteplayback
+                                controlslist="nodownload noplaybackrate nofullscreen"></video>
+                            <button class="reel-sound-btn" data-muted="true" onclick="toggleReelSound(this, event)"
+                                aria-label="Toggle sound">
+                                <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                                </svg>
+                                <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="reel-caption">
+                            <span class="reel-caption-tag">PDF → Reel</span>
+                            <div class="reel-caption-text">How mRNA vaccines work</div>
+                        </div>
+                    </div>
+                    <div class="reel-card">
+                        <div class="reel-frame">
+                            <video src="example_videos/example_reel.mp4" autoplay muted loop playsinline
+                                disablepictureinpicture disableremoteplayback
+                                controlslist="nodownload noplaybackrate nofullscreen"></video>
+                            <button class="reel-sound-btn" data-muted="true" onclick="toggleReelSound(this, event)"
+                                aria-label="Toggle sound">
+                                <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                                </svg>
+                                <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="reel-caption">
+                            <span class="reel-caption-tag">One prompt</span>
+                            <div class="reel-caption-text">Quantum computing</div>
+                        </div>
+                    </div>
+                    <div class="reel-card">
+                        <div class="reel-frame">
+                            <video src="example_videos/derivative.mp4" autoplay muted loop playsinline
+                                disablepictureinpicture disableremoteplayback
+                                controlslist="nodownload noplaybackrate nofullscreen"></video>
+                            <button class="reel-sound-btn" data-muted="true" onclick="toggleReelSound(this, event)"
+                                aria-label="Toggle sound">
+                                <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                                </svg>
+                                <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="reel-caption">
+                            <span class="reel-caption-tag">Manim math</span>
+                            <div class="reel-caption-text">Derivatives, animated</div>
+                        </div>
+                    </div>
+                    <div class="reel-card">
+                        <div class="reel-frame">
+                            <video src="example_videos/rl.mp4" autoplay muted loop playsinline disablepictureinpicture
+                                disableremoteplayback controlslist="nodownload noplaybackrate nofullscreen"></video>
+                            <button class="reel-sound-btn" data-muted="true" onclick="toggleReelSound(this, event)"
+                                aria-label="Toggle sound">
+                                <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                                </svg>
+                                <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="reel-caption">
+                            <span class="reel-caption-tag">With quiz</span>
+                            <div class="reel-caption-text">Reinforcement learning + end-quiz</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SPOTLIGHT 1: ONE PROMPT -->
+    <section id="features" class="spotlight-prompt">
+        <div class="spotlight-split">
+            <div class="spotlight-text reveal">
+                <span class="section-label">No files needed</span>
+                <h2
+                    style="font-size: 2.6rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; margin-bottom: 20px;">
+                    Just describe it.</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7;">Type one line — a topic, a
+                    question, a chapter title — and AI writes the full script, picks the visuals, and renders a
+                    polished short-form reel from scratch. Nothing to upload.</p>
+                <div class="prompt-mock prompt-mock-desktop">
+                    <div class="prompt-mock-label">Your prompt</div>
+                    <div class="prompt-mock-input">
+                        <span>How enzymes work<span class="prompt-caret"></span></span>
+                    </div>
+                    <button class="prompt-mock-btn" type="button" tabindex="-1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12l5 5L20 7"></path>
+                        </svg>
+                        Generate reel
+                    </button>
+                </div>
+            </div>
+            <div class="spotlight-visual reveal">
+                <div class="spotlight-phone">
+                    <video src="example_videos/example_reel.mp4" autoplay muted loop playsinline disablepictureinpicture
+                        disableremoteplayback controlslist="nodownload noplaybackrate nofullscreen"></video>
+                    <button class="reel-sound-btn" data-muted="true" onclick="toggleReelSound(this, event)"
+                        aria-label="Toggle sound">
+                        <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                        <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="prompt-mock prompt-mock-mobile">
+                <div class="prompt-mock-label">Your prompt</div>
+                <div class="prompt-mock-input">
+                    <span>How enzymes work<span class="prompt-caret"></span></span>
+                </div>
+                <button class="prompt-mock-btn" type="button" tabindex="-1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12l5 5L20 7"></path>
+                    </svg>
+                    Generate reel
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SPOTLIGHT 2: DOCUMENTS -->
+    <section class="spotlight-docs spotlight-alt">
+        <div class="section-header reveal">
+            <span class="section-label">Your materials</span>
+            <h2>Or turn your documents into reels.</h2>
+            <p>Drop in a PDF, a Word doc, or your own notes — AI reads them, splits long material into chapters, and
+                generates one or more reels for each.</p>
+        </div>
+        <div class="spotlight-split">
+            <div class="spotlight-text reveal">
+                <div class="doc-tabs" role="tablist">
+                    <button class="doc-tab active" data-doc="pdf" onclick="selectDoc('pdf')" type="button">
+                        <span class="doc-tab-icon">PDF</span>
+                        <span class="doc-tab-body">
+                            <span class="doc-tab-name">mRNA_vaccines.pdf</span>
+                            <span class="doc-tab-meta">12 pages · research paper</span>
+                        </span>
+                        <svg class="doc-tab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                    <button class="doc-tab" data-doc="docx" onclick="selectDoc('docx')" type="button">
+                        <span class="doc-tab-icon">DOCX</span>
+                        <span class="doc-tab-body">
+                            <span class="doc-tab-name">quantum_lecture.docx</span>
+                            <span class="doc-tab-meta">8 pages · lecture notes</span>
+                        </span>
+                        <svg class="doc-tab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                    <button class="doc-tab" data-doc="notes" onclick="selectDoc('notes')" type="button">
+                        <span class="doc-tab-icon">MD</span>
+                        <span class="doc-tab-body">
+                            <span class="doc-tab-name">cell_biology_notes.md</span>
+                            <span class="doc-tab-meta">Markdown · study notes</span>
+                        </span>
+                        <svg class="doc-tab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div class="doc-preview-panel">
+                    <div class="doc-preview active" data-doc="pdf">
+                        <div class="doc-preview-title">mRNA_vaccines.pdf</div>
+                        <div class="doc-line" style="width: 86%"></div>
+                        <div class="doc-line" style="width: 72%"></div>
+                        <div class="doc-line heading" style="width: 34%"></div>
+                        <div class="doc-line" style="width: 92%"></div>
+                        <div class="doc-line" style="width: 68%"></div>
+                        <div class="doc-line" style="width: 80%"></div>
+                    </div>
+                    <div class="doc-preview" data-doc="docx">
+                        <div class="doc-preview-title">quantum_lecture.docx</div>
+                        <div class="doc-line heading" style="width: 42%"></div>
+                        <div class="doc-line" style="width: 78%"></div>
+                        <div class="doc-line" style="width: 91%"></div>
+                        <div class="doc-line" style="width: 64%"></div>
+                        <div class="doc-line heading" style="width: 30%"></div>
+                        <div class="doc-line" style="width: 83%"></div>
+                    </div>
+                    <div class="doc-preview" data-doc="notes">
+                        <div class="doc-preview-title">cell_biology_notes.md</div>
+                        <div class="doc-line heading" style="width: 28%"></div>
+                        <div class="doc-line" style="width: 70%"></div>
+                        <div class="doc-line" style="width: 58%"></div>
+                        <div class="doc-line" style="width: 88%"></div>
+                        <div class="doc-line heading" style="width: 36%"></div>
+                        <div class="doc-line" style="width: 74%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="spotlight-visual reveal">
+                <div>
+                    <div class="spotlight-phone">
+                        <video src="example_videos/example_reel.mp4" autoplay muted loop playsinline
+                            disablepictureinpicture disableremoteplayback
+                            controlslist="nodownload noplaybackrate nofullscreen"></video>
+                        <button class="reel-sound-btn" data-muted="true" onclick="toggleReelSound(this, event)"
+                            aria-label="Toggle sound">
+                            <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <line x1="23" y1="9" x2="17" y2="15"></line>
+                                <line x1="17" y1="9" x2="23" y2="15"></line>
+                            </svg>
+                            <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="docs-reel-caption">
+                        <span class="reel-caption-tag">Generated reel</span>
+                        <div class="docs-reel-caption-text active" data-doc="pdf">How mRNA vaccines work · 45s reel
+                        </div>
+                        <div class="docs-reel-caption-text" data-doc="docx">Quantum computing basics · 60s reel</div>
+                        <div class="docs-reel-caption-text" data-doc="notes">Cell biology recap · 3 reels generated
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CAPABILITIES 2x2 -->
+    <section>
+        <div class="section-header reveal">
+            <span class="section-label">Built in</span>
+            <h2>More than just narrated slides</h2>
+            <p>A few things you'd expect to need another app for — already inside PDF to Reel.</p>
+        </div>
+        <div class="capabilities-grid">
+            <div class="capability-card reveal">
+                <div class="capability-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                         stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <rect x="3" y="4" width="7" height="16" rx="2" />
+                        <rect x="14" y="4" width="7" height="10" rx="2" />
+                        <path d="M14 18h7" opacity="0.5" />
                     </svg>
                 </div>
-                <h3>PDF &amp; text input</h3>
-                <p>Upload any PDF document or paste text directly. Our parser extracts key information and structures it
-                    for video narration.</p>
+                <h3>Batch generation</h3>
+                <p>Turn one prompt or document into a whole playlist — AI splits your topic into chapters and
+                    renders multiple reels in a single run.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.5"
+            <div class="capability-card reveal">
+                <div class="capability-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+                        <path d="M18 6l1 1 2-2" opacity="0.7" />
+                    </svg>
+                </div>
+                <h3>Pick your favorite avatar</h3>
+                <p>Choose from a library of animated characters — find a voice and vibe that matches your audience,
+                    or let AI pick one that fits the topic.</p>
+            </div>
+            <div class="capability-card reveal">
+                <div class="capability-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19h16M7 19V9l4-5h2l4 5v10" />
+                        <path d="M9 13h6M9 16h4" />
+                    </svg>
+                </div>
+                <h3>Manim math animations</h3>
+                <p>For math, physics, and CS, the engine animates equations, graphs, and proofs using Manim — the
+                    same renderer behind 3Blue1Brown.</p>
+            </div>
+            <div class="capability-card reveal">
+                <div class="capability-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                         stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10" />
-                        <path d="M8 12l2 2 4-4" />
+                        <path d="M9.1 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                        <circle cx="12" cy="17" r="0.6" fill="currentColor" />
                     </svg>
                 </div>
-                <h3>AI-powered scripts</h3>
-                <p>Advanced language models distill your content into concise, engaging scripts perfectly timed for
-                    short-form video.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="23 7 16 12 23 17 23 7" />
-                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                </div>
-                <h3>Auto video generation</h3>
-                <p>AI selects relevant visuals, applies transitions, and generates a polished reel ready for TikTok,
-                    Reels, or Shorts.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                    </svg>
-                </div>
-                <h3>Quick topic prompts</h3>
-                <p>No PDF? No problem. Just type a topic like "Explain quantum computing" and get a video reel generated
-                    from scratch.</p>
+                <h3>Auto-quiz at the end</h3>
+                <p>Optionally close each reel with an AI-generated quiz question — great for revision and for
+                    keeping viewers watching all the way through.</p>
             </div>
         </div>
     </section>
 
-    <!-- USE CASES -->
-    <section class="usecases">
-        <div class="section-header">
-            <span class="section-label">Use cases</span>
-            <h2>Built for learners &amp; creators</h2>
-            <p>Whether you're studying or creating content, PDF to Reel fits right into your workflow.</p>
+    <!-- PREVIEW / DASHBOARD -->
+    <section id="preview" class="demo">
+        <div class="demo-inner">
+            <div class="section-header reveal">
+                <span class="section-label">Product tour</span>
+                <h2>Inside the dashboard</h2>
+                <p>Type, generate, done. A preview of the app you'll be using.</p>
+            </div>
+            <div class="demo-video-wrap reveal">
+                <span class="demo-video-badge">Preview clip · full walkthrough soon</span>
+                <video src="example_videos/example_reel.mp4" autoplay muted loop playsinline disablepictureinpicture
+                    disableremoteplayback controlslist="nodownload noplaybackrate nofullscreen"></video>
+            </div>
         </div>
-        <div class="usecases-grid">
-            <div class="usecase-card">
-                <div class="usecase-emoji">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.2"
+    </section>
+
+    <!-- AUDIENCE -->
+    <section class="audience">
+        <div class="section-header reveal">
+            <span class="section-label">Who it's for</span>
+            <h2>Built for learners &amp; creators</h2>
+            <p>Whatever you're working on, PDF to Reel slots right into your workflow.</p>
+        </div>
+        <div class="audience-grid">
+            <div class="audience-card reveal">
+                <div class="audience-icon">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                         stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                        <path d="M22 10L12 5 2 10l10 5 10-5z" />
+                        <path d="M6 12v5c3.5 3 8.5 3 12 0v-5" />
+                        <path d="M22 10v6" />
                     </svg>
                 </div>
                 <h3>Students</h3>
-                <p>Transform lecture notes and textbooks into bite-sized video summaries for fast, effective revision.
-                </p>
+                <p>Turn lecture notes and textbook chapters into bite-sized reels for fast, memorable revision — with
+                    an optional quiz at the end to lock it in.</p>
+                <div class="audience-tags">
+                    <span class="audience-tag">Exam prep</span>
+                    <span class="audience-tag">Lecture recap</span>
+                    <span class="audience-tag">Quick revision</span>
+                </div>
             </div>
-            <div class="usecase-card">
-                <div class="usecase-emoji">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.2"
+            <div class="audience-card reveal">
+                <div class="audience-icon">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                         <circle cx="9" cy="7" r="4" />
@@ -1029,73 +2207,46 @@
                     </svg>
                 </div>
                 <h3>Educators</h3>
-                <p>Quickly produce engaging educational content from your existing teaching materials and curricula.</p>
+                <p>Turn the slides and PDFs you already have into engaging lesson reels — plus built-in quizzes to
+                    check understanding without extra tooling.</p>
+                <div class="audience-tags">
+                    <span class="audience-tag">Flipped classroom</span>
+                    <span class="audience-tag">Recap clips</span>
+                    <span class="audience-tag">Assignments</span>
+                </div>
             </div>
-            <div class="usecase-card">
-                <div class="usecase-emoji">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34CB36" stroke-width="1.2"
+            <div class="audience-card reveal">
+                <div class="audience-icon">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                         stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                        <line x1="7" y1="2" x2="7" y2="22" />
-                        <line x1="17" y1="2" x2="17" y2="22" />
-                        <line x1="2" y1="12" x2="22" y2="12" />
-                        <line x1="2" y1="7" x2="7" y2="7" />
-                        <line x1="2" y1="17" x2="7" y2="17" />
-                        <line x1="17" y1="7" x2="22" y2="7" />
-                        <line x1="17" y1="17" x2="22" y2="17" />
+                        <polygon points="23 7 16 12 23 17 23 7" />
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                     </svg>
                 </div>
                 <h3>Content creators</h3>
-                <p>Scale your content pipeline. Turn research papers, articles, or any document into ready-to-post video
-                    reels.</p>
+                <p>Scale your pipeline. Feed a research paper, an article, or just a prompt — get a playlist of
+                    ready-to-post reels in one batch.</p>
+                <div class="audience-tags">
+                    <span class="audience-tag">Batch output</span>
+                    <span class="audience-tag">TikTok &amp; Reels</span>
+                    <span class="audience-tag">Faceless channels</span>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- PRICING -->
     <section id="pricing">
-        <div class="section-header">
+        <div class="section-header reveal">
             <span class="section-label">Pricing</span>
             <h2>Simple, transparent pricing</h2>
-            <!--<p>Start free, upgrade when you need more.</p>-->
-            <p>coming soon...</p>
+            <p>coming soon (try out 90 free credits)...</p>
         </div>
-
-        <!--
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <h3>Free</h3>
-                <div class="price">$0 <span>/ month</span></div>
-                <div class="price-note">Perfect for trying it out</div>
-                <ul class="pricing-features">
-                    <li>3 reels per month</li>
-                    <li>PDF &amp; text input</li>
-                    <li>720p export</li>
-                    <li>Watermarked output</li>
-                </ul>
-                <a href="https://app.pdftoreel.com" class="btn btn-outline">Get Started</a>
-            </div>
-            <div class="pricing-card featured">
-                <div class="pricing-badge">Popular</div>
-                <h3>Pro</h3>
-                <div class="price">$9 <span>/ month</span></div>
-                <div class="price-note">For creators and students</div>
-                <ul class="pricing-features">
-                    <li>Unlimited reels</li>
-                    <li>PDF &amp; text input</li>
-                    <li>1080p export</li>
-                    <li>No watermark</li>
-                    <li>Priority generation</li>
-                </ul>
-                <a href="https://app.pdftoreel.com" class="btn btn-primary">Subscribe Now</a>
-            </div>
-        </div>
-        -->
     </section>
 
     <!-- CTA -->
     <section class="cta">
-        <div class="cta-box">
+        <div class="cta-box reveal">
             <h2>Ready to create your first reel?</h2>
             <p>Turn your ideas into engaging videos with AI.</p>
             <a href="https://app.pdftoreel.com" class="btn btn-primary">Get Started Free</a>
@@ -1117,8 +2268,9 @@
                 <div class="footer-col">
                     <h4>Product</h4>
                     <ul>
-                        <li><a href="#how-it-works">How it works</a></li>
+                        <li><a href="#reels">Examples</a></li>
                         <li><a href="#features">Features</a></li>
+                        <li><a href="#preview">Preview</a></li>
                         <li><a href="#pricing">Pricing</a></li>
                         <li><a href="https://app.pdftoreel.com">Open App</a></li>
                     </ul>
@@ -1135,6 +2287,86 @@
             &copy; 2026 PDF to Reel. All rights reserved.
         </div>
     </footer>
+
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("mobile-menu");
+            var hamburgerIcon = document.getElementById("hamburger-icon");
+            var closeIcon = document.getElementById("close-icon");
+            var isOpen = menu.classList.contains("open");
+
+            if (isOpen) {
+                menu.classList.remove("open");
+                document.body.classList.remove("menu-open");
+                hamburgerIcon.style.display = "block";
+                closeIcon.style.display = "none";
+            } else {
+                menu.classList.add("open");
+                document.body.classList.add("menu-open");
+                hamburgerIcon.style.display = "none";
+                closeIcon.style.display = "block";
+            }
+        }
+
+        function scrollReels(direction) {
+            var track = document.getElementById('reels-track-container');
+            if (!track) return;
+            var card = track.querySelector('.reel-card');
+            var step = card ? card.offsetWidth + 24 : 280;
+            track.scrollBy({ left: direction * step, behavior: 'smooth' });
+        }
+
+        function toggleReelSound(btn, event) {
+            if (event) event.stopPropagation();
+            var video = btn.parentElement.querySelector('video');
+            if (!video) return;
+            var willUnmute = video.muted;
+
+            // Mute every reel and reset every sound button
+            document.querySelectorAll('.reel-sound-btn').forEach(function (b) {
+                var v = b.parentElement.querySelector('video');
+                if (v) v.muted = true;
+                b.setAttribute('data-muted', 'true');
+            });
+
+            if (willUnmute) {
+                video.muted = false;
+                btn.setAttribute('data-muted', 'false');
+                var p = video.play();
+                if (p && typeof p.catch === 'function') p.catch(function () { });
+            }
+        }
+
+        function selectDoc(docId) {
+            document.querySelectorAll('.doc-tab').forEach(function (t) {
+                t.classList.toggle('active', t.dataset.doc === docId);
+            });
+            document.querySelectorAll('.doc-preview').forEach(function (p) {
+                p.classList.toggle('active', p.dataset.doc === docId);
+            });
+            document.querySelectorAll('.docs-reel-caption-text').forEach(function (c) {
+                c.classList.toggle('active', c.dataset.doc === docId);
+            });
+        }
+
+        (function () {
+            var elements = document.querySelectorAll('.reveal');
+            if (!elements.length) return;
+            if (!('IntersectionObserver' in window)) {
+                elements.forEach(function (el) { el.classList.add('in-view'); });
+                return;
+            }
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+            elements.forEach(function (el) { observer.observe(el); });
+        })();
+    </script>
 </body>
 
 </html>
